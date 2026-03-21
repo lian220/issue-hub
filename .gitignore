@@ -1,0 +1,64 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Node.js
+node_modules/
+.next/
+out/
+dist/
+.nuxt/
+.cache/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Docker volumes
+postgres_data/
+redis_data/
+kafka_data/
+
+# Compiled output
+*.class
+*.jar
+*.war
+*.ear
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test / Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Misc
+*.bak
+*.tmp
+*.temp

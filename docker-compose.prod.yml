@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  postgres:
+    ports: !override []
+    restart: always
+
+  redis:
+    ports: !override []
+    restart: always
+
+  kafka:
+    ports: !override []
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+    restart: always
+
+  kafka-ui:
+    profiles:
+      - debug
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: issuehub-backend
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: issuehub-frontend
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    container_name: issuehub-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: always
