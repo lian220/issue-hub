@@ -1,0 +1,54 @@
+# IssueHub Helm Chart 기본 설정
+
+api:
+  replicaCount: 1
+  image:
+    repository: issuehub/api
+    tag: latest
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: issuehub/frontend
+    tag: latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+opensearch:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+ingress:
+  enabled: true
+  host: issuehub.local
+
+# 외부 서비스 (Aiven PostgreSQL, Upstash Redis)
+externalDatabase:
+  host: ""
+  port: 5432
+  name: issuehub
+  existingSecret: issuehub-db-credentials
+
+externalRedis:
+  host: ""
+  port: 6379
+  existingSecret: issuehub-redis-credentials

@@ -1,0 +1,5 @@
+# IssueHub Airflow DAG 의존성 (Phase 3)
+# apache-airflow>=2.8
+# google-generativeai
+# requests
+# psycopg2-binary

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: issuehub
+description: IssueHub - 이슈 통합/자동화/정책 관리 플랫폼
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

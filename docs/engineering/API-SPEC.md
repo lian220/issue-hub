@@ -1565,6 +1565,21 @@ POST /api/v1/webhooks/teams
 
 ---
 
+### 8.6 Discord Webhook (Interaction)
+
+```
+POST /api/v1/webhooks/discord
+```
+
+**검증:** Ed25519 서명 검증 (`X-Signature-Ed25519`, `X-Signature-Timestamp` 헤더, Application Public Key 사용)
+
+**처리되는 Interaction 타입:**
+- `PING` (Type 1) - Discord 초기 엔드포인트 검증
+- `APPLICATION_COMMAND` (Type 2) - Slash Command (`/issue create`, `/issue search`, `/issue status`)
+- `MESSAGE_COMPONENT` (Type 3) - 버튼 클릭 (상태 변경, 담당자 배정)
+
+---
+
 ## 9. Users API (사용자 관리)
 
 ### 9.1 현재 사용자 프로필
