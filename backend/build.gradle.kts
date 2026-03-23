@@ -1,11 +1,11 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("jvm") version "1.9.25" apply false
-    kotlin("plugin.spring") version "1.9.25" apply false
-    kotlin("plugin.jpa") version "1.9.25" apply false
-    id("org.springframework.boot") version "3.3.5" apply false
-    id("io.spring.dependency-management") version "1.1.6" apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.spring) apply false
+    alias(libs.plugins.kotlin.jpa) apply false
+    alias(libs.plugins.spring.boot) apply false
+    alias(libs.plugins.spring.dependency.management) apply false
 }
 
 allprojects {
@@ -21,24 +21,24 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        "implementation"(kotlin("stdlib"))
-        "implementation"(kotlin("reflect"))
+        "implementation"(rootProject.libs.kotlin.stdlib)
+        "implementation"(rootProject.libs.kotlin.reflect)
 
-        "testImplementation"("org.junit.jupiter:junit-jupiter:5.10.3")
-        "testImplementation"("io.mockk:mockk:1.13.12")
-        "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+        "testImplementation"(rootProject.libs.junit.jupiter)
+        "testImplementation"(rootProject.libs.mockk)
+        "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
     }
 
-    tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = "21"
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        compilerOptions {
+            freeCompilerArgs.set(listOf("-Xjsr305=strict"))
+            jvmTarget.set(JvmTarget.JVM_25)
         }
     }
 
     tasks.withType<JavaCompile> {
-        sourceCompatibility = "21"
-        targetCompatibility = "21"
+        sourceCompatibility = "25"
+        targetCompatibility = "25"
     }
 
     tasks.withType<Test> {

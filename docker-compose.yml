@@ -1,42 +1,10 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: issuehub-postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-issuehub}
-      POSTGRES_USER: ${POSTGRES_USER:-issuehub}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-issuehub_dev}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-issuehub} -d ${POSTGRES_DB:-issuehub}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: issuehub-redis
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
+  # === Phase 2+ ===
   kafka:
     image: apache/kafka:3.7.0
     container_name: issuehub-kafka
+    profiles:
+      - phase2
     ports:
       - "9092:9092"
     environment:
@@ -59,6 +27,8 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: issuehub-kafka-ui
+    profiles:
+      - phase2
     ports:
       - "8090:8080"
     environment:
@@ -69,7 +39,45 @@ services:
       - kafka
     restart: unless-stopped
 
+  # === Local Development (Aiven/Upstash 없이 로컬 개발 시) ===
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: issuehub-postgres
+    profiles:
+      - local
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-issuehub}
+      POSTGRES_USER: ${POSTGRES_USER:-issuehub}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-issuehub_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-issuehub} -d ${POSTGRES_DB:-issuehub}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: issuehub-redis
+    profiles:
+      - local
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
+  kafka_data:
   postgres_data:
   redis_data:
-  kafka_data:

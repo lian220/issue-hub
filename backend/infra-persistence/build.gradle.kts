@@ -1,8 +1,8 @@
 plugins {
-    kotlin("plugin.spring")
-    kotlin("plugin.jpa")
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.kotlin.jpa)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
@@ -20,8 +20,6 @@ dependencies {
     implementation(project(":core-automation"))
     implementation(project(":core-connector"))
 
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
-    runtimeOnly("org.postgresql:postgresql")
+    implementation(libs.bundles.spring.data.jpa)
+    runtimeOnly(libs.postgresql)
 }

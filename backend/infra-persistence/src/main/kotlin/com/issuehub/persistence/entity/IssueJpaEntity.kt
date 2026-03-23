@@ -44,7 +44,7 @@ class IssueJpaEntity(
 
     var category: String? = null,
 
-    @Column(name = "tags", columnDefinition = "TEXT[]")
+    @Column(name = "tags")
     var tags: String? = null,
 
     @Column(name = "assignee_id")

@@ -1,7 +1,7 @@
 plugins {
-    kotlin("plugin.spring")
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
@@ -18,5 +18,5 @@ dependencies {
     implementation(project(":core-connector"))
     implementation(project(":infra-persistence"))
 
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation(libs.spring.boot.starter)
 }

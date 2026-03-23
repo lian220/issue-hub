@@ -1,7 +1,7 @@
 # IssueHub - 시스템 아키텍처
 
-> 문서 버전: 1.1
-> 최종 수정일: 2026-03-21
+> 문서 버전: 2.0
+> 최종 수정일: 2026-03-23
 > 작성자: IssueHub 개발팀
 > 상태: 전문가 패널 피드백 반영
 
@@ -20,7 +20,11 @@
 | **Search** | OpenSearch (로컬 Docker/k3d, nori 한국어 형태소 분석) | - | 이슈/정책 전문 검색 |
 | **Vector DB** | pgvector (PostgreSQL 확장) | 0.7+ | 임베딩 저장, 유사도 검색 |
 | **Migration** | Flyway | 10.x | 데이터베이스 스키마 버전 관리 |
-| **LLM** | Gemini API (포트/어댑터 패턴) | 최신 안정 버전 | 정책 Q&A, 유사 이슈, 자동 분류, 위반 감지 |
+| **LLM** | Ollama (로컬 기본) + Claude/Gemini API (폴백) | 최신 안정 버전 | 정책 Q&A, 유사 이슈, 자동 분류, 위반 감지 |
+| **Code Intelligence** | bare clone + tree-sitter + pgvector 임베딩 | - | 코드 인덱싱, AST 분석, 유사 코드 검색 |
+| **Coding Agent** | OpenHands (포트/어댑터 패턴, 프로젝트별 선택) | - | AI 코딩 에이전트, 자동 코드 수정 |
+| **AI Integration** | Spring AI + MCP Client (Phase 3+) | - | LLM 통합, 모델 컨텍스트 프로토콜 |
+| **Local LLM** | Ollama (Qwen2.5-Coder-7B 기본, Claude API 폴백) | - | 로컬 코드 분석, 임베딩 생성 |
 | **Container** | Docker, Docker Compose | - | 로컬 개발 및 배포 |
 | **Container Orchestration** | Phase 1: Docker Compose / Phase 2+: k3d (K8s) | - | 서비스 배포, CronJob, HPA, Helm |
 | **Batch Orchestration** | Phase 3+: Apache Airflow (K8sExecutor) | - | 다단계 배치 파이프라인 (임베딩, 리인덱싱, 아카이빙) |
@@ -171,6 +175,25 @@ backend/
 │   ├── port/              -- LLM 호출, 임베딩 생성 포트 정의
 │   └── service/           -- AI 관련 UseCase 구현
 │
+├── core-code-intel/       -- [신규] 코드 인텔리전스 도메인
+│   ├── port/              -- CodeIntelPort, CodingAgentPort 정의
+│   └── service/           -- 코드 분석 UseCase 구현
+│
+├── infra-code-intel-local/ -- [신규] 로컬 코드 분석 어댑터 (같은 JVM)
+│   ├── clone/             -- bare clone / fetch 관리
+│   ├── indexer/           -- tree-sitter AST 인덱싱
+│   └── embedding/         -- pgvector 임베딩 저장/검색
+│
+├── infra-code-intel-remote/ -- [신규] Agent 원격 호출 어댑터 (gRPC)
+│   └── grpc/              -- gRPC 클라이언트 스텁
+│
+├── infra-code-intel-api/  -- [신규] GitHub/GitLab API 온디맨드 어댑터
+│   └── client/            -- REST API 클라이언트
+│
+├── infra-openhands/       -- [신규] OpenHands 코딩 에이전트 어댑터
+│   ├── client/            -- OpenHands API 클라이언트
+│   └── config/            -- 에이전트 설정
+│
 ├── infra-persistence/     -- JPA 엔티티, 레포지토리
 │   ├── entity/            -- JPA @Entity 클래스
 │   ├── repository/        -- Spring Data JPA Repository
@@ -235,10 +258,16 @@ issuehub/
 │   ├── core-automation/
 │   ├── core-connector/
 │   ├── core-ai/             # Phase 3: LLM/임베딩 포트
+│   ├── core-code-intel/     # [신규] 코드 인텔리전스 도메인
 │   ├── infra-persistence/
 │   ├── infra-kafka/
 │   ├── infra-webhook/
-│   └── infra-llm/           # Phase 3: Gemini/OpenAI/Ollama 어댑터
+│   ├── infra-llm/           # Phase 3: Gemini/OpenAI/Ollama 어댑터
+│   ├── infra-code-intel-local/  # [신규] 로컬 코드 분석 어댑터
+│   ├── infra-code-intel-remote/ # [신규] Agent 원격 호출 어댑터
+│   ├── infra-code-intel-api/    # [신규] GitHub/GitLab API 어댑터
+│   ├── infra-openhands/     # [신규] OpenHands 코딩 에이전트 어댑터
+│   └── agent/               # [신규] Agent 독립 실행 (하이브리드 배포용)
 ├── frontend/                # Next.js + TypeScript (UI)
 ├── pipelines/               # Phase 3: Python (Airflow DAG)
 │   ├── dags/
@@ -735,3 +764,45 @@ PR 생성
 |------|------|------|
 | **인증 사용자** | 분당 100회 | Redis 기반 슬라이딩 윈도우 |
 | **비인증 사용자** | 분당 20회 | IP 기반 제한 |
+
+---
+
+## 14. 코드 인텔리전스 아키텍처
+
+> 설계 스펙: docs/superpowers/specs/2026-03-22-issuehub-ai-code-platform-design.md
+
+### 14.1 3-컴포넌트 구조
+
+IssueHub의 AI 코드 분석은 3개 독립 컴포넌트로 구성된다:
+
+- **Hub**: 티켓 관리, 대시보드, RBAC, 오케스트레이션 (기존 app-api)
+- **Code Intelligence**: Git clone/fetch, 코드 인덱싱, 임베딩/검색, AST 분석
+- **LLM/Agent**: Ollama(로컬), Claude API(폴백), OpenHands(코딩 에이전트)
+
+### 14.2 신규 모듈
+
+기존 모듈은 유지하며 아래 모듈을 추가한다:
+
+| 모듈 | 역할 |
+|------|------|
+| core-code-intel | 코드 인텔리전스 도메인 (CodeIntelPort, CodingAgentPort) |
+| infra-code-intel-local | 로컬 코드 분석 어댑터 (같은 JVM) |
+| infra-code-intel-remote | Agent 원격 호출 어댑터 (gRPC) |
+| infra-code-intel-api | GitHub/GitLab API 온디맨드 어댑터 |
+| infra-openhands | OpenHands 코딩 에이전트 어댑터 |
+| agent | Agent 독립 실행 파일 (하이브리드 배포 모드용) |
+
+### 14.3 배포 모드
+
+| 모드 | 구성 | 대상 |
+|------|------|------|
+| 올인원 셀프호스팅 | Hub + Code Intelligence + Ollama (Docker Compose) | 소규모 팀, 에어갭 |
+| 하이브리드 | Hub(SaaS) + Agent(고객 인프라, gRPC) | 코드 외부 반출 불가 |
+| 완전 SaaS | Hub + GitHub API 온디맨드 | 무료 티어, 체험 |
+
+### 14.4 외부 연동 전략
+
+- **핵심 CRUD/동기화**: Direct REST API (ConnectorPort 어댑터)
+- **AI 기능**: Spring AI + MCP Client
+- **자동화**: core-automation 직접 구현 (n8n 등 외부 도구 미사용)
+- **배치 파이프라인**: Airflow (Phase 3)
