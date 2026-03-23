@@ -40,19 +40,27 @@
 ```
 frontend/src/
 ├── app/                      # Next.js App Router (라우팅 + 페이지 진입점만)
-│   ├── (auth)/               # Route group: 인증 관련
-│   ├── dashboard/            # 대시보드 라우트
-│   │   ├── issues/
-│   │   │   ├── page.tsx      # 목록 페이지 (Server Component)
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   ├── overview/
-│   │   │   ├── layout.tsx    # Parallel routes용 레이아웃
-│   │   │   ├── @area_stats/  # Parallel route slot
-│   │   │   └── @bar_stats/
+│   ├── (auth)/               # Route group: 인증 (사이드바 없는 레이아웃)
+│   │   ├── login/page.tsx
 │   │   └── layout.tsx
-│   ├── layout.tsx
-│   └── page.tsx
+│   ├── (dashboard)/           # Route group: 대시보드 (AppShell 레이아웃)
+│   │   ├── page.tsx           # / → 대시보드 홈
+│   │   ├── issues/
+│   │   │   ├── page.tsx       # /issues
+│   │   │   └── [id]/page.tsx  # /issues/:id
+│   │   ├── projects/
+│   │   │   ├── page.tsx       # /projects
+│   │   │   └── [id]/settings/page.tsx
+│   │   ├── automation/page.tsx
+│   │   ├── connectors/page.tsx
+│   │   ├── policies/
+│   │   │   ├── page.tsx
+│   │   │   └── [id]/page.tsx
+│   │   ├── analytics/page.tsx
+│   │   ├── settings/page.tsx
+│   │   └── layout.tsx         # AppShell 적용
+│   ├── layout.tsx             # Root (providers, fonts)
+│   └── globals.css
 ├── components/
 │   ├── ui/                   # shadcn/ui 기본 컴포넌트 (수정 금지, npx로 관리)
 │   ├── forms/                # 재사용 폼 컴포넌트 (FormInput, FormSelect 등)
