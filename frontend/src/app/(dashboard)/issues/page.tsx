@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { IssueTable } from "@/components/issues/IssueTable";
-import { IssueFilters } from "@/components/issues/IssueFilters";
+import { IssueTable } from "@/features/issues/components/issue-table";
+import { IssueFilters } from "@/features/issues/components/issue-filters";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 

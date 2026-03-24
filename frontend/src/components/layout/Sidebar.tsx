@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CircleDot,
+  FolderKanban,
   Shield,
   Zap,
   Plug,
@@ -14,7 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/constants";
+import { NAV_ITEMS } from "@/config/nav-config";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -25,6 +26,7 @@ import {
 const ICON_MAP = {
   LayoutDashboard,
   CircleDot,
+  FolderKanban,
   Shield,
   Zap,
   Plug,
@@ -73,8 +75,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
           if (collapsed) {
             return (
-              <Tooltip key={item.href} delayDuration={0}>
-                <TooltipTrigger asChild>
+              <Tooltip key={item.href}>
+                <TooltipTrigger>
                   <Link
                     href={item.href}
                     className={cn(

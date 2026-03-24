@@ -8,7 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlatformIcon } from "@/components/common/PlatformIcon";
+import { PlatformIcon } from "@/components/common/platform-icon";
 import { Platform } from "@/types/issue";
 
 const PLACEHOLDER_CONNECTORS = [
