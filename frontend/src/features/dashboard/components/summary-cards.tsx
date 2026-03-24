@@ -1,11 +1,5 @@
 import Link from "next/link";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   CircleDot,
   Clock,
   CheckCircle2,
@@ -72,27 +66,25 @@ export function SummaryCards() {
         const isUrgent = card.urgent && data[card.key] > 0;
 
         return (
-          <Link key={card.key} href={card.href}>
-            <Card
-              className={cn(
-                "transition-colors hover:bg-muted/50 cursor-pointer",
-                isUrgent && "border-red-300 dark:border-red-800"
-              )}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {card.title}
-                </CardTitle>
-                <div className={cn("rounded-lg p-2", card.bgColor, isUrgent && "animate-pulse")}>
-                  <Icon className={`h-4 w-4 ${card.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className={cn("text-3xl font-bold", isUrgent && "text-red-600")}>
-                  {data[card.key].toLocaleString("ko-KR")}
-                </div>
-              </CardContent>
-            </Card>
+          <Link
+            key={card.key}
+            href={card.href}
+            className={cn(
+              "block rounded-xl border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-muted/50",
+              isUrgent && "border-red-300 dark:border-red-800"
+            )}
+          >
+            <span className="flex items-center justify-between pb-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </span>
+              <span className={cn("rounded-lg p-2", card.bgColor, isUrgent && "animate-pulse")}>
+                <Icon className={`h-4 w-4 ${card.color}`} />
+              </span>
+            </span>
+            <span className={cn("block text-3xl font-bold", isUrgent && "text-red-600")}>
+              {data[card.key].toLocaleString("ko-KR")}
+            </span>
           </Link>
         );
       })}

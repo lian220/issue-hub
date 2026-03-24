@@ -52,12 +52,10 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
         </Button>
 
         <DropdownMenu>
-          <DropdownMenuTrigger >
-            <Button variant="ghost" size="icon" className="rounded-full" aria-label="사용자 메뉴">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">관리</AvatarFallback>
-              </Avatar>
-            </Button>
+          <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-full p-1 hover:bg-accent" aria-label="사용자 메뉴">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="text-xs">관리</AvatarFallback>
+            </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>내 계정</DropdownMenuLabel>
