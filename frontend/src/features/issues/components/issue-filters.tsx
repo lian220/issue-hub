@@ -54,7 +54,7 @@ export function IssueFilters({
 
       <Select
         value={status ?? "all"}
-        onValueChange={(v) => onStatusChange(v === "all" ? undefined : v)}
+        onValueChange={(v: string | null) => onStatusChange(!v || v === "all" ? undefined : v)}
       >
         <SelectTrigger className="w-[140px]" aria-label="상태 필터">
           <SelectValue placeholder="상태" />
@@ -71,7 +71,7 @@ export function IssueFilters({
 
       <Select
         value={priority ?? "all"}
-        onValueChange={(v) => onPriorityChange(v === "all" ? undefined : v)}
+        onValueChange={(v: string | null) => onPriorityChange(!v || v === "all" ? undefined : v)}
       >
         <SelectTrigger className="w-[140px]" aria-label="우선순위 필터">
           <SelectValue placeholder="우선순위" />
@@ -88,7 +88,7 @@ export function IssueFilters({
 
       <Select
         value={source ?? "all"}
-        onValueChange={(v) => onSourceChange(v === "all" ? undefined : v)}
+        onValueChange={(v: string | null) => onSourceChange(!v || v === "all" ? undefined : v)}
       >
         <SelectTrigger className="w-[140px]" aria-label="소스 필터">
           <SelectValue placeholder="소스" />

@@ -450,7 +450,7 @@ CREATE TABLE projects (
     org_id UUID NOT NULL REFERENCES organizations(id),
     name VARCHAR(255) NOT NULL,
     service_tag VARCHAR(100),                      -- 서비스 구분 (증권, 쇼핑 등)
-    git_url TEXT NOT NULL,
+    git_url TEXT,                                    -- nullable: Wizard 프로젝트는 레포 생성 후 채워짐
     git_branch VARCHAR(100) DEFAULT 'main',
     code_intel_mode VARCHAR(20) DEFAULT 'local',   -- local | agent | api
     coding_agent VARCHAR(20) DEFAULT 'none',       -- openhands | swe-agent | none
@@ -589,7 +589,30 @@ backend/
 ├── agent/                           # Agent 독립 실행 파일 (모드 2용)
 │   └── AgentApplication.kt         # core-code-intel을 gRPC 서비스로 노출
 │
-└── core-ai/                         # 기존 AI 모듈 (정책 Q&A, 유사 이슈 등)
+├── core-ai/                         # 기존 AI 모듈 (정책 Q&A, 유사 이슈 등)
+│
+├── core-project-wizard/             # [v3.0 신규] 프로젝트 생성 도메인
+│   ├── port/outbound/
+│   │   ├── ScaffoldPort.kt
+│   │   ├── GitRepoCreatePort.kt
+│   │   └── DeployPort.kt
+│   ├── service/
+│   │   ├── MvpAnalysisService.kt
+│   │   ├── ScaffoldService.kt
+│   │   └── AutoDeployService.kt
+│   └── model/
+│       ├── ProjectBlueprint.kt
+│       └── DeployTarget.kt
+│
+├── infra-scaffold/                  # [v3.0 신규] 스캐폴딩 어댑터
+│   ├── NextjsScaffoldAdapter.kt
+│   ├── ViteReactScaffoldAdapter.kt
+│   └── SpringBootScaffoldAdapter.kt
+│
+└── infra-deploy/                    # [v3.0 신규] 배포 어댑터
+    ├── VercelDeployAdapter.kt
+    ├── RailwayDeployAdapter.kt
+    └── SupabaseProvisionAdapter.kt
 ```
 
 ---
@@ -662,33 +685,9 @@ Phase 3: 클라우드 하이브리드
 
 ## 10. [v3.0] Project Wizard 상세 설계
 
-### 10.1 신규 모듈 구조
+### 10.1 모듈 구조
 
-```
-backend/
-├── core-project-wizard/              # [신규] 프로젝트 생성 도메인
-│   ├── port/outbound/
-│   │   ├── ScaffoldPort.kt           # 코드 생성 추상화
-│   │   ├── GitRepoCreatePort.kt      # GitHub 레포 생성
-│   │   └── DeployPort.kt             # 배포 추상화
-│   ├── service/
-│   │   ├── MvpAnalysisService.kt     # AI PRD/ERD 생성
-│   │   ├── ScaffoldService.kt        # 스캐폴딩 오케스트레이션
-│   │   └── AutoDeployService.kt      # 배포 오케스트레이션
-│   └── model/
-│       ├── ProjectBlueprint.kt       # PRD + ERD + 기능 목록 + 스택
-│       └── DeployTarget.kt           # 배포 대상 설정
-│
-├── infra-scaffold/                   # 스캐폴딩 어댑터
-│   ├── NextjsScaffoldAdapter.kt
-│   ├── ViteReactScaffoldAdapter.kt
-│   └── SpringBootScaffoldAdapter.kt
-│
-├── infra-deploy/                     # 배포 어댑터
-│   ├── VercelDeployAdapter.kt
-│   ├── RailwayDeployAdapter.kt
-│   └── SupabaseProvisionAdapter.kt
-```
+> 모듈 전체 목록은 섹션 7 참조. 아래는 포트 인터페이스 상세만 기술.
 
 ### 10.2 포트 인터페이스
 
@@ -895,7 +894,35 @@ class SupabaseProvisionAdapter : DeployPort {
 4. 무료 티어 한도 초과 → 안내 메시지 + 대안 플랫폼 제안
 ```
 
-### 10.6 신규 데이터 모델
+### 10.6 보안 및 접근 제어
+
+#### 플랫폼별 필수 OAuth 스코프
+
+| 플랫폼 | 필수 스코프 | 용도 |
+|--------|-----------|------|
+| GitHub | `repo` (private), `public_repo` (public) | 레포 생성, 코드 푸시 |
+| Vercel | `project:create`, `deployment:create`, `env:write` | 프로젝트 생성, 배포, 환경변수 |
+| Railway | `project:create`, `service:create` | 프로젝트/서비스 생성 |
+| Supabase | `projects:create`, `database:write` | 프로젝트 생성, migration |
+
+#### Wizard RBAC 권한
+
+| 역할 | 새 프로젝트 만들기 | 배포 관리 | 배포 삭제 |
+|------|:----------------:|:---------:|:---------:|
+| Admin | O | O | O |
+| Manager | O | O | O |
+| Member | X | X | X |
+| Viewer | X | X | X |
+
+> Wizard는 외부 리소스(레포, 배포, DB)를 생성하므로 Manager 이상만 허용.
+
+#### 생성 제한
+
+- 조직당 Wizard 프로젝트 최대 **10개/월** (무료 플랫폼 남용 방지)
+- 동시 생성 작업 **1개** (리소스 보호)
+- 90일 미사용 Wizard 프로젝트 → 관리자에게 정리 알림
+
+### 10.7 신규 데이터 모델
 
 #### 신규 테이블
 
@@ -903,12 +930,14 @@ class SupabaseProvisionAdapter : DeployPort {
 -- 프로젝트 블루프린트 (AI가 생성한 PRD/ERD)
 CREATE TABLE project_blueprints (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id UUID NOT NULL REFERENCES projects(id),
+    org_id UUID NOT NULL REFERENCES organizations(id),
+    project_id UUID REFERENCES projects(id),  -- nullable: 블루프린트는 프로젝트 생성 전에 만들어짐
     overview TEXT NOT NULL,
     features JSONB NOT NULL,         -- [{name, description, priority, enabled}]
     erd_schema JSONB NOT NULL,       -- {tables: [...], relations: [...]}
     pages JSONB NOT NULL,            -- [{name, route, description}]
     tech_stack VARCHAR(50) NOT NULL,  -- nextjs-supabase, vite-react 등
+    deploy_targets JSONB NOT NULL DEFAULT '[]',  -- ["vercel", "supabase"]
     raw_user_input TEXT,             -- 원본 아이디어 텍스트
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -917,6 +946,7 @@ CREATE TABLE project_blueprints (
 -- 배포 정보
 CREATE TABLE deployments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES organizations(id),
     project_id UUID NOT NULL REFERENCES projects(id),
     platform VARCHAR(20) NOT NULL,    -- vercel, railway, supabase
     platform_project_id TEXT,         -- 플랫폼 내 프로젝트 ID
@@ -939,6 +969,21 @@ CREATE TABLE platform_tokens (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE(user_id, platform)
 );
+
+-- Wizard 비동기 작업 추적
+CREATE TABLE wizard_tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES organizations(id),
+    blueprint_id UUID NOT NULL REFERENCES project_blueprints(id),
+    project_id UUID REFERENCES projects(id),  -- nullable: 프로젝트 생성 후 채워짐
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    -- PENDING, IN_PROGRESS, COMPLETED, FAILED
+    steps JSONB NOT NULL DEFAULT '[]',
+    -- [{name, status, started_at, completed_at, error_message}]
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ
+);
 ```
 
 #### 기존 projects 테이블 확장
@@ -960,7 +1005,7 @@ data class ProjectBlueprint(
     val erd: ErdSchema,
     val pages: List<PageStructure>,
     val techStack: TechStack,
-    val deployTarget: DeployTarget,
+    val deployTargets: List<DeployTarget>,  // DB의 deploy_targets JSONB에 저장
     val rawUserInput: String?
 )
 
@@ -981,7 +1026,7 @@ data class RelationDef(
 )
 ```
 
-### 10.7 API 설계
+### 10.8 API 설계
 
 #### Project Wizard API
 
@@ -1064,7 +1109,7 @@ GET    /api/v1/platforms/status
   }
 ```
 
-### 10.8 프론트엔드 화면
+### 10.9 프론트엔드 화면
 
 #### 신규 화면 목록
 
@@ -1193,7 +1238,7 @@ GET    /api/v1/platforms/status
 
 ---
 
-## 11. 리스크
+## 12. 리스크
 
 | 리스크 | 영향 | 대응 |
 |--------|------|------|
@@ -1201,6 +1246,9 @@ GET    /api/v1/platforms/status
 | OpenHands 프로젝트 방치 | 코딩 에이전트 불능 | CodingAgentPort 추상화로 교체 용이 |
 | 대형 레포 인덱싱 시간 | 온보딩 지연 | 클라우드 임베딩 + 점진적 인덱싱 |
 | 기능 과다 (84개 PRD 기능) | 출시 지연 | P0만 우선, 나머지 제거/연기 |
+| [v3.0] AI 스캐폴딩 품질 불안정 | 빌드 실패, 배포 실패 | 베이스 템플릿으로 폴백, 3회 자동 수정 |
+| [v3.0] 무료 배포 플랫폼 정책 변경 | 무료 티어 축소/폐지 | DeployPort 추상화로 대안 플랫폼 교체 용이 |
+| [v3.0] ERD → 코드 변환 정확도 | 잘못된 스키마/타입 | 사용자 검토 단계 필수, AI 재생성 가능 |
 
 ---
 
@@ -1392,3 +1440,9 @@ ollama run qwen2.5-coder:7b       # 실행, API 서버로 동작
 | Mac Mini | 48GB 추천 | Phase 3까지 안정 운영 가능 |
 | n8n | 제외 | AUT와 중복, 양방향 동기화 부적합, 팀 규모 |
 | LangChain | 제외 | 기존 추상화로 충분, Spring AI가 더 적합 |
+| [v3.0] Project Wizard | 단계별 Wizard (폼 기반) | 안정적 UX, Chat-First는 v4.0 |
+| [v3.0] 스캐폴딩 | 베이스 템플릿 + AI 커스터마이징 | 배포 성공률 + 유연성 균형 |
+| [v3.0] 배포 플랫폼 | Vercel + Railway + Supabase | 무료 티어 활용, 프론트+백엔드+DB 커버 |
+| [v3.0] ERD | AI 자동 생성 + React Flow 편집 | 비개발자도 데이터 모델 이해/수정 가능 |
+| [v3.0] 첫 템플릿 | nextjs-supabase | 가장 범용적, 무료 배포 최적 |
+| [v3.0] Wizard 후 전환 | 이슈 기반 워크플로우로 전환 | 기존 IssueHub 기능과 자연스러운 연결 |

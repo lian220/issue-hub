@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/components/common/StatusBadge";
-import { PriorityBadge } from "@/components/common/PriorityBadge";
-import { PlatformIcon } from "@/components/common/PlatformIcon";
+import { StatusBadge } from "@/components/common/status-badge";
+import { PriorityBadge } from "@/components/common/priority-badge";
+import { PlatformIcon } from "@/components/common/platform-icon";
 import { formatRelativeTime } from "@/lib/utils";
 import { Issue } from "@/types/issue";
 
