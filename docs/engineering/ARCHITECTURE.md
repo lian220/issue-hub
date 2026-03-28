@@ -12,7 +12,7 @@
 | 계층 | 기술 | 버전 | 용도 |
 |------|------|------|------|
 | **Backend** | Kotlin + Spring Boot | 3.x | REST API, 비즈니스 로직, 이벤트 처리 |
-| **Frontend** | Next.js (App Router) | 14.x | 사용자 인터페이스, SSR/CSR |
+| **Frontend** | Next.js (App Router) | 16.x | 사용자 인터페이스, SSR/CSR |
 | **Database** | PostgreSQL + pgvector | 16+ | 데이터 저장, 전문 검색, 벡터 유사도 검색 |
 | **Cache** | Redis | 7.x | 세션 캐시, Pub/Sub, SSE 이벤트 분산 |
 | **이벤트 처리** | Phase 1-2: Spring Event + @Async / Phase 2+: Redis Streams / 대규모: Kafka | - | 비동기 이벤트 처리, 커넥터 동기화 |
@@ -230,7 +230,7 @@ backend/
     └── policy/            -- 정책 만료 체크 스케줄러
 
 frontend/
-└── Next.js 14 App Router
+└── Next.js 16 App Router
     ├── app/               -- 라우트 구조
     │   ├── (auth)/        -- 인증 관련 페이지
     │   ├── dashboard/     -- 대시보드

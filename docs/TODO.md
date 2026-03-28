@@ -1,335 +1,305 @@
-# IssueHub 개발 TODO List
+# IssueHub MVP TODO
 
-> 최종 수정일: 2026-03-23
-> 참조: FRONTEND-SPEC.md, BACKEND-SPEC.md, 2026-03-22-issuehub-ai-code-platform-design.md
-
----
-
-## 0. 프로젝트 구조 셋업
-
-- [ ] **0-1. 프론트엔드 디렉토리 리팩토링**
-  - [ ] `app/` → `app/(auth)/` + `app/(dashboard)/` Route Group 분리
-  - [ ] `app/(dashboard)/layout.tsx` 에 AppShell 적용
-  - [ ] `app/(auth)/layout.tsx` 사이드바 없는 레이아웃
-  - [ ] 기존 `app/issues/`, `app/policies/` 등 → `app/(dashboard)/` 하위로 이동
-  - [ ] 파일명 kebab-case 통일 (`AppShell.tsx` → `app-shell.tsx`)
-- [ ] **0-2. features/ 디렉토리 생성**
-  - [ ] `features/dashboard/components/`, `hooks/`
-  - [ ] `features/issues/components/`, `hooks/`, `utils/`
-  - [ ] `features/projects/components/`
-  - [ ] `features/automation/components/`
-  - [ ] `features/connectors/components/`
-  - [ ] `features/policies/components/`
-  - [ ] `features/analytics/components/`
-  - [ ] `features/settings/components/`
-- [ ] **0-3. 공용 구조 정리**
-  - [ ] `config/nav-config.ts` 생성 (기존 `lib/constants.ts`에서 NAV_ITEMS 분리)
-  - [ ] `constants/mock-data.ts` (완료)
-  - [ ] `components/common/status-badge.tsx` 생성
-  - [ ] `components/common/priority-badge.tsx` 생성
-  - [ ] `components/common/platform-icon.tsx` 생성
-- [ ] **0-4. 기존 컴포넌트 이동**
-  - [ ] `components/dashboard/SummaryCards.tsx` → `features/dashboard/components/summary-cards.tsx`
-  - [ ] `components/issues/` → `features/issues/components/`
-  - [ ] `lib/constants.ts` 분리 → `config/` + `constants/`
-  - [ ] 모든 import 경로 수정 + 빌드 확인
+> 최종 수정일: 2026-03-28
+> Jira: https://liandy220-developer.atlassian.net/jira/software/projects/LIH
+> 구조: 에픽 = Phase, 스토리 = 사용자 스토리, 라벨 = 도메인
+> 참조: Expert Panel 결과 (2026-03-25), FRONTEND-SPEC.md, BACKEND-SPEC.md
 
 ---
 
-## 1. 통합 대시보드 UI (목업)
+## 완료 현황
 
-- [ ] **1-1. 사이드바 개선**
-  - [ ] 프로젝트 목록 섹션 추가 (프로젝트 아이콘 + 이름 + 동기화 상태)
-  - [ ] 프로젝트 선택 시 해당 프로젝트 이슈로 필터
-  - [ ] "프로젝트" 네비 항목 추가
-- [ ] **1-2. SummaryCards 개선**
-  - [ ] 프로젝트별 필터 적용
-  - [ ] 카드 클릭 시 이슈 목록으로 이동 (해당 상태 필터)
-- [ ] **1-3. RecentIssues 위젯**
-  - [ ] 소스 배지 (Jira/GitHub/IssueHub)
-  - [ ] 우선순위 도트 + 라벨
-  - [ ] SLA 잔여시간/위반 표시
-  - [ ] 클릭 시 이슈 상세로 이동
-- [ ] **1-4. TeamWorkload 위젯**
-  - [ ] 팀원별 이슈 수 + 프로그레스바
-  - [ ] 워크로드 과부하 색상 표시 (초록/노랑/빨강)
-- [ ] **1-5. TrendChart**
-  - [ ] Recharts 설치 + 이슈 트렌드 라인 차트
-  - [ ] 기간 선택 (7일/30일/90일)
-- [ ] **1-6. SLA 현황 위젯**
-  - [ ] 응답/해결 SLA 준수율 프로그레스바
-  - [ ] 현재 위반 이슈 수 + 링크
-- [ ] **1-7. 반응형 레이아웃**
-  - [ ] 모바일: 1열, 태블릿: 2열, 데스크톱: 4열 그리드
-  - [ ] 사이드바 접힘 지원 (이미 구현됨, 확인)
+- [x] ~~프론트 구조 셋업 (Route Group, Feature-based, kebab-case)~~
+- [x] ~~대시보드 목업 (SummaryCards, RecentIssues, TeamWorkload, SlaStatus)~~
+- [x] ~~이슈 상세 + AI 분석 목업 (AiAnalysisPanel, AutoDevSection)~~
+- [x] ~~이슈 목록 목업 (DataTable, 칩 필터, 검색)~~
 
 ---
 
-## 2. 이슈 상세 + AI 분석 화면 (목업)
+## [EP-0] Phase 0: 기반 정리 (1주)
 
-- [ ] **2-1. 이슈 헤더**
-  - [ ] 제목, 우선순위 배지, 상태 배지, 소스 배지
-  - [ ] 담당자 아바타, 생성일, SLA 잔여시간
-- [ ] **2-2. 탭 구조**
-  - [ ] [상세] 설명 + 라벨 + 메타데이터
-  - [ ] [AI 분석] AiAnalysisPanel (핵심 차별점)
-  - [ ] [히스토리] 상태 변경 타임라인
-  - [ ] [댓글] 댓글 목록 + 작성
-- [ ] **2-3. AI 분석 패널 (AiAnalysisPanel)**
-  - [ ] 영향 파일 목록 (파일명:라인 + 함수명)
-  - [ ] 최근 변경 이력 (누가 언제 뭘 바꿨는지)
-  - [ ] 유사 과거 이슈 (제목 + 해결 상태 + 링크)
-  - [ ] 수정 제안 (AI가 생성한 텍스트)
-  - [ ] 모두 목업 데이터
-- [ ] **2-4. 자동 개발 섹션**
-  - [ ] "자동 개발 시작" 버튼 (목업: 클릭 시 토스트 알림)
-  - [ ] 자동 개발 이력 (PR 링크, 상태, 에이전트명)
-- [ ] **2-5. 사이드 패널**
-  - [ ] 담당자 변경, 우선순위 변경, 라벨 편집, 프로젝트 표시
+> 목표: docker compose up으로 백엔드+프론트 앱이 뜨고, CI가 동작한다
 
----
+### 백엔드 기반 `label:infra`
 
-## 3. 이슈 목록 화면 (목업)
+- [ ] **P0-1. 스켈레톤 코드 정리**
+  - Issue 도메인 모델에 `orgId`, `projectId` 추가
+  - `DomainException` sealed class 생성 (EntityNotFound, BusinessRuleViolation, ValidationFailed)
+  - `IssueService`에 `@Service` + 예외 체계 적용
+  - `infra-kafka` 모듈 비활성화 (Phase 2 이후)
+  - `bin/` 디렉토리 삭제 + `.gitignore` 확인
+  - `infra-llm`: GeminiAdapter → OllamaAdapter 기본으로 변경
+  - DoD: `./gradlew build` 성공
 
-- [ ] **3-1. DataTable 구현**
-  - [ ] TanStack Table 설치 + 설정
-  - [ ] columns.tsx: 우선순위(도트), 제목, 소스(배지), 담당자, SLA, 상태, 생성일
-  - [ ] cell-action.tsx: 편집, 상태변경, 자동개발 시작 드롭다운
-- [ ] **3-2. 필터 툴바**
-  - [ ] 텍스트 검색 (제목, 설명)
-  - [ ] 소스 필터 (Jira/GitHub/Notion/IssueHub)
-  - [ ] 상태 필터 (열림/진행중/해결됨 등)
-  - [ ] 우선순위 필터
-  - [ ] 프로젝트 필터
-  - [ ] 담당자 필터
-  - [ ] URL 기반 필터 상태 관리 (nuqs)
-- [ ] **3-3. 페이지네이션**
-  - [ ] 페이지 크기 선택 (10/20/50)
-  - [ ] URL 기반 페이지 상태 (nuqs)
-- [ ] **3-4. 이슈 생성 모달/페이지**
-  - [ ] react-hook-form + zod 스키마
-  - [ ] 제목, 설명, 우선순위, 프로젝트, 담당자, 라벨 입력
+- [ ] **P0-2. API 공통 인프라**
+  - `ApiResponse<T>` 공용 래퍼 (success, data, error, timestamp)
+  - `PageResponse<T>` 페이지네이션 래퍼
+  - `GlobalExceptionHandler` (@RestControllerAdvice)
+  - `application-local.yml`, `application-dev.yml` 프로파일 분리
+  - DoD: 에러 발생 시 일관된 JSON 응답 반환
 
----
+- [ ] **P0-3. DB 마이그레이션 (V3~V5)**
+  - V3: `organizations` 테이블 (id, slug, name, plan, settings, created_at)
+  - V4: 기존 테이블에 `org_id` FK 추가 (users, issues, teams 등)
+  - V5: `projects` 테이블 (id, org_id, name, service_tag, git_url, code_intel_mode, llm_provider 등)
+  - DoD: Flyway 마이그레이션 성공, 테이블 생성 확인
 
-## 4. 프로젝트 관리 (백엔드 + 프론트)
+- [ ] **P0-4. 개발 인프라**
+  - Docker Compose에 백엔드 앱 서비스 추가 (또는 로컬 bootRun 가이드)
+  - TestContainers 설정 (PostgreSQL)
+  - ArchUnit 기본 규칙 (core-domain은 Spring 의존 금지, core→infra 의존 금지)
+  - GitHub Actions CI (build + test on PR)
+  - DoD: `docker compose up` 후 `/actuator/health` 200 반환
 
-### 백엔드
-- [ ] **4-1. Project 도메인 모델**
-  - [ ] `core-domain/model/Project.kt` (id, orgId, name, serviceTag, gitUrl, codeIntelMode, llmProvider 등)
-  - [ ] `core-domain/enums/CodeIntelMode.kt`, `LlmProvider.kt`
-- [ ] **4-2. Project UseCase + Port**
-  - [ ] `CreateProjectUseCase`, `UpdateProjectUseCase`, `GetProjectUseCase`, `ListProjectsUseCase`
-  - [ ] `LoadProjectPort`, `SaveProjectPort`
-  - [ ] `ProjectService` 구현
-- [ ] **4-3. Project Persistence**
-  - [ ] `ProjectJpaEntity`, `ProjectJpaRepository`, `ProjectPersistenceAdapter`
-  - [ ] Flyway 마이그레이션 `V3__create_projects.sql`
-- [ ] **4-4. Project REST API**
-  - [ ] `ProjectController` (GET/POST/PATCH /api/v1/projects)
-  - [ ] Request/Response DTO
-- [ ] **4-5. Organization 기반**
-  - [ ] `OrganizationJpaEntity`, `OrganizationJpaRepository`
-  - [ ] Flyway `V4__create_organizations.sql` + 기존 테이블에 org_id FK
+### 프론트엔드 기반 `label:frontend`
 
-### 프론트엔드
-- [ ] **4-6. 프로젝트 목록 페이지**
-  - [ ] ProjectCard (이름, Git URL, 모드, LLM, 동기화 상태, 이슈 수)
-  - [ ] 프로젝트 추가 버튼 → 생성 폼
-- [ ] **4-7. 프로젝트 설정 페이지**
-  - [ ] 기본 정보 (이름, service_tag)
-  - [ ] Git 연동 (URL, 브랜치, 동기화 주기)
-  - [ ] 코드 분석 모드 선택 (Local/Agent/API)
-  - [ ] LLM 선택 (Ollama/Claude/Gemini) + 폴백 설정
-  - [ ] 코딩 에이전트 선택 (OpenHands/SWE-agent/None)
-  - [ ] 임베딩 모델 선택
-- [ ] **4-8. API 연동**
-  - [ ] `features/projects/hooks/use-projects.ts`
-  - [ ] 목업 → 실제 API 전환
+- [ ] **P0-5. UI 인프라 정리**
+  - `loading.tsx` + `error.tsx` 글로벌 및 주요 라우트별 추가
+  - shadcn Skeleton 컴포넌트 설치 + 위젯별 Skeleton 생성
+  - Toast 시스템 (shadcn sonner) 설치 + `alert()` 제거
+  - 파일명 통일: `Header.tsx` → `header.tsx`, `Sidebar.tsx` → `sidebar.tsx`
+  - DoD: 빌드 성공 + Console 에러 0개
+
+- [ ] **P0-6. Mock 추상화 레이어**
+  - 각 feature에 `use-{feature}.ts` 훅 생성 (mock 데이터 반환)
+  - 컴포넌트에서 `MOCK_*` 직접 import 제거 → 훅으로 교체
+  - `features/dashboard/hooks/use-dashboard-stats.ts`
+  - `features/issues/hooks/use-issue-detail.ts`
+  - DoD: 모든 컴포넌트가 훅을 통해서만 데이터 접근
+
+- [ ] **P0-7. 폼/테스트 라이브러리 설치**
+  - `react-hook-form` + `zod` + `@hookform/resolvers` 설치
+  - `vitest` + `@testing-library/react` + `msw` 설치
+  - `vitest.config.ts` 설정
+  - 첫 번째 테스트: `use-dashboard-stats` 훅 테스트
+  - DoD: `npm test` 통과
 
 ---
 
-## 5. 자동화 규칙 설정 (백엔드 + 프론트)
+## [EP-1] Phase 1: 인증 + 이슈/프로젝트 CRUD (3~4주)
 
-### 백엔드
-- [ ] **5-1. AutomationRule UseCase + Port**
-  - [ ] `CreateRuleUseCase`, `UpdateRuleUseCase`, `DeleteRuleUseCase`, `TestRuleUseCase`
-  - [ ] `RuleEvaluator` 확장 (Strategy 패턴으로 ActionHandler 분리)
-- [ ] **5-2. SLA 정책 서비스**
-  - [ ] `SlaService` (시작, 일시정지, 재개, 위반 체크)
-  - [ ] 비즈니스 시간 계산 (주말/공휴일 제외)
-- [ ] **5-3. 에스컬레이션 체인**
-  - [ ] `EscalationService` (담당자 → 팀장 → 매니저 단계별)
-- [ ] **5-4. REST API**
-  - [ ] `AutomationController` (CRUD + dry-run)
+> 목표: 사용자가 로그인해서 프로젝트를 만들고, 이슈를 생성/조회할 수 있다
 
-### 프론트엔드
-- [ ] **5-5. 규칙 목록 페이지**
-  - [ ] RuleCard (이름, 트리거, 조건, 액션 요약, 활성/비활성 토글)
-- [ ] **5-6. 규칙 생성/수정 폼**
-  - [ ] 트리거 선택 (이슈 생성, 상태 변경, 시간 기반 등)
-  - [ ] 조건 빌더 (필드 + 연산자 + 값)
-  - [ ] 액션 선택 (담당자 배정, 라벨 추가, 알림, 에스컬레이션)
-  - [ ] Dry-run 테스트 버튼
+### 인증 `label:auth`
 
----
+- [ ] **P1-1. JWT 인증 백엔드**
+  - `SecurityConfig` (Spring Security + JWT)
+  - 로그인 API: `POST /api/v1/auth/login` → JWT 발급
+  - 토큰 검증 필터
+  - RBAC 기본: ADMIN / MEMBER 2단계
+  - DoD: Postman으로 로그인 → JWT → 인증된 API 호출 성공
+  - 사용자 스토리: "사용자가 이메일/비밀번호로 로그인할 수 있다"
 
-## 6. 자동 개발 추적 대시보드 (백엔드 + 프론트)
+- [ ] **P1-2. 로그인 UI**
+  - `app/(auth)/login/page.tsx` 로그인 폼 구현
+  - react-hook-form + zod 검증
+  - JWT 저장 (httpOnly cookie 또는 localStorage)
+  - 인증 상태 관리 (미인증 시 `/login` 리다이렉트)
+  - DoD: 브라우저에서 로그인 → 대시보드 진입
+  - 사용자 스토리: "사용자가 로그인 화면에서 이메일/비밀번호를 입력하면 대시보드로 이동한다"
 
-### 백엔드
-- [ ] **6-1. CodingTask 도메인**
-  - [ ] `CodingAgentPort` + `OpenHandsAdapter` 구현
-  - [ ] `coding_tasks` 테이블 (status: PENDING/RUNNING/COMPLETED/FAILED)
-  - [ ] REST API: POST /api/v1/issues/{id}/auto-dev, GET /api/v1/coding-tasks
-- [ ] **6-2. 상태 추적**
-  - [ ] OpenHands API 폴링으로 상태 업데이트
-  - [ ] `CodingTaskCompletedEvent` 발행
+### 프로젝트 CRUD `label:project`
 
-### 프론트엔드
-- [ ] **6-3. 자동 개발 대시보드 페이지**
-  - [ ] 진행중/완료/실패 탭
-  - [ ] 작업별: 이슈 링크, PR 링크, 에이전트명, 시작시간, 소요시간
-- [ ] **6-4. 이슈 상세 연동**
-  - [ ] "자동 개발 시작" 버튼 → API 호출
-  - [ ] 자동 개발 이력 섹션 실제 데이터 연동
+- [ ] **P1-3. 프로젝트 CRUD 백엔드**
+  - Project 도메인 모델 + UseCase + Port + Service
+  - `ProjectPersistenceAdapter` + `ProjectJpaEntity`
+  - `ProjectController` (GET/POST/PATCH /api/v1/projects)
+  - DoD: API로 프로젝트 생성/조회/수정 가능
+  - 사용자 스토리: "사용자가 Git 레포 URL을 입력하면 프로젝트가 등록된다"
 
----
+- [ ] **P1-4. 프로젝트 관리 UI**
+  - 프로젝트 목록 페이지 (ProjectCard)
+  - 프로젝트 생성 폼 (이름, Git URL, 브랜치)
+  - 프로젝트 설정 페이지 (코드 분석 모드, LLM 선택)
+  - API 연동 (`features/projects/hooks/use-projects.ts`)
+  - DoD: 브라우저에서 프로젝트 생성 → 목록에서 확인
+  - 사용자 스토리: "사용자가 프로젝트를 등록하고 설정을 변경할 수 있다"
 
-## 7. DB 스키마 (백엔드 인프라)
+### 이슈 CRUD `label:issue`
 
-- [ ] **7-1. V3: organizations 테이블**
-  - [ ] id, slug, name, plan, settings(JSONB), created_at
-- [ ] **7-2. V4: 기존 테이블 org_id 추가**
-  - [ ] users, issues, teams, policies, connector_configs, automation_rules, audit_logs에 org_id FK
-- [ ] **7-3. V5: projects 테이블**
-  - [ ] id, org_id, name, service_tag, git_url, git_branch, code_intel_mode, coding_agent, llm_provider, embedding_provider, last_sync_at
-- [ ] **7-4. V6: 코드 인텔리전스 테이블**
-  - [ ] code_chunks (file_path, chunk_type, symbol_name, content, embedding, last_commit_sha)
-  - [ ] symbol_index (symbol_name, symbol_type, file_path, line_number, language)
-  - [ ] file_dependencies (source_file, target_file, dependency_type)
-- [ ] **7-5. V7: coding_tasks 테이블**
-  - [ ] id, project_id, issue_id, agent_provider, status, pr_url, error_message, started_at, completed_at
+- [ ] **P1-5. 이슈 CRUD 백엔드**
+  - `IssueController` (GET/POST/PATCH/DELETE /api/v1/issues)
+  - Request/Response DTO + Validation
+  - 페이지네이션 + 필터 (상태, 우선순위, 소스, 프로젝트, 담당자)
+  - 대시보드 API: `GET /api/v1/dashboard/stats`, `recent-issues`, `team-workload`
+  - DoD: API로 이슈 CRUD + 필터 + 대시보드 통계 조회 가능
+  - 사용자 스토리: "사용자가 이슈를 생성하고 목록에서 필터링할 수 있다"
 
----
+- [ ] **P1-6. 프론트 실데이터 연동**
+  - 대시보드: SummaryCards, RecentIssues, TeamWorkload → API 훅 연결
+  - 이슈 목록: DataTable → API 훅 연결 + 서버사이드 필터/페이지네이션
+  - 이슈 상세: IssueDetail → API 훅 연결
+  - 이슈 생성 폼 (react-hook-form + zod)
+  - DoD: 목업 데이터 0개, 전부 실제 API 데이터
+  - 사용자 스토리: "사용자가 대시보드에서 실제 이슈 현황을 보고, 이슈를 클릭해서 상세를 볼 수 있다"
 
-## 8. 이슈 CRUD API + Jira 동기화 (백엔드 인프라)
-
-- [ ] **8-1. Issue REST API**
-  - [ ] `IssueController` (GET/POST/PATCH/DELETE /api/v1/issues)
-  - [ ] `CreateIssueRequest`, `UpdateIssueRequest`, `IssueResponse` DTO
-  - [ ] 페이지네이션 + 필터 (상태, 우선순위, 소스, 프로젝트, 담당자)
-- [ ] **8-2. JWT 인증**
-  - [ ] `SecurityConfig` (Spring Security + JWT)
-  - [ ] 로그인/토큰 발급 API
-- [ ] **8-3. RBAC 기본**
-  - [ ] ADMIN/MEMBER 2단계 (Phase 1 최소)
-  - [ ] `@PreAuthorize` 적용
-- [ ] **8-4. Jira 단방향 동기화**
-  - [ ] `JiraConnectorAdapter` (Jira REST API v3)
-  - [ ] 5분 주기 폴링 (`@Scheduled`)
-  - [ ] Jira 이슈 → IssueHub Issue 매핑
+### Phase 1 검증
+> ✅ "사용자가 로그인하여 프로젝트를 등록하고, 이슈를 생성하고 목록에서 확인할 수 있는가?"
 
 ---
 
-## 9. Git bare clone + fetch (백엔드 인프라)
+## [EP-2] Phase 2: Jira 연동 + 대시보드 실데이터 (2~3주)
 
-- [ ] **9-1. GitRepoMirror 서비스**
-  - [ ] 프로젝트 등록 시 `git clone --bare`
-  - [ ] 주기적 `git fetch` (5분 또는 webhook)
-  - [ ] 디스크 사용량 모니터링
-- [ ] **9-2. 저장소 관리**
-  - [ ] `/data/repos/{project_id}.git/` 디렉토리 구조
-  - [ ] 프로젝트 삭제 시 클린업
-  - [ ] Git 인증 토큰 관리 (읽기 전용 scope)
+> 목표: Jira 이슈가 IssueHub 대시보드에 자동으로 보인다
 
----
+### Jira 동기화 `label:connector`
 
-## 10. 코드 인덱싱 파이프라인 (백엔드 인프라)
+- [ ] **P2-1. Jira 단방향 동기화**
+  - `JiraConnectorAdapter` (Jira REST API v3, API Token 인증)
+  - 5분 주기 폴링 (`@Scheduled`)
+  - Jira Issue → IssueHub Issue 매핑 (상태/우선순위/담당자)
+  - 커넥터 설정 API: `POST /api/v1/connectors` (Jira URL, 프로젝트 키, API Token)
+  - DoD: Jira 프로젝트의 이슈가 IssueHub에 자동 동기화
+  - 사용자 스토리: "사용자가 Jira 프로젝트를 연결하면 이슈가 자동으로 동기화된다"
 
-- [ ] **10-1. CodeIntelPort 인터페이스**
-  - [ ] `analyzeForTicket()`, `searchCode()`, `getAffectedFiles()`
-- [ ] **10-2. LocalCodeIntelAdapter**
-  - [ ] 코드 청킹 (함수/클래스 단위)
-  - [ ] 임베딩 생성 (EmbeddingPort → Ollama nomic-embed)
-  - [ ] pgvector 저장 (code_chunks 테이블)
-- [ ] **10-3. 심볼 인덱스**
-  - [ ] AST 파싱 (tree-sitter 또는 정규식 기반 Phase 1)
-  - [ ] symbol_index 테이블 적재
-- [ ] **10-4. TicketEnrichmentService**
-  - [ ] 이슈 생성 시 관련 코드 자동 검색
-  - [ ] LLM으로 분석 결과 생성
-  - [ ] 이슈에 AI 분석 결과 첨부
+- [ ] **P2-2. 커넥터 설정 UI**
+  - 커넥터 추가 폼 (Jira URL, 프로젝트 키, API Token 입력)
+  - 동기화 상태 표시 (성공/실패/마지막 동기화 시간)
+  - 수동 동기화 버튼
+  - DoD: 브라우저에서 Jira 연결 설정 → 이슈 목록에서 Jira 이슈 확인
+  - 사용자 스토리: "사용자가 UI에서 Jira를 연결하고 동기화 상태를 확인할 수 있다"
 
----
+### 대시보드 강화 `label:dashboard`
 
-## 11. Ollama + LLM 연동 (백엔드 인프라)
+- [ ] **P2-3. 차트 + 트렌드**
+  - 차트 라이브러리 설치 (visx 또는 recharts)
+  - TrendChart: 이슈 트렌드 (7일/30일/90일)
+  - 플랫폼별 이슈 분포 차트
+  - DoD: 대시보드에 실데이터 기반 차트 표시
+  - 사용자 스토리: "사용자가 대시보드에서 이슈 트렌드를 그래프로 확인할 수 있다"
 
-- [ ] **11-1. OllamaLlmAdapter**
-  - [ ] Ollama REST API 호출 (`POST /api/generate`)
-  - [ ] 모델 선택 (프로젝트 설정 기반)
-- [ ] **11-2. ClaudeApiLlmAdapter**
-  - [ ] Claude API 폴백
-  - [ ] 프로젝트별 LLM 라우팅 로직
-- [ ] **11-3. OllamaEmbeddingAdapter**
-  - [ ] `POST /api/embeddings` 호출
-  - [ ] nomic-embed-text 모델
-- [ ] **11-4. Docker Compose 설정**
-  - [ ] Ollama 서비스 추가
-  - [ ] OLLAMA_NUM_PARALLEL, OLLAMA_KEEP_ALIVE 설정
-  - [ ] 모델 자동 다운로드 스크립트
+- [ ] **P2-4. 프로젝트 스위처**
+  - 사이드바에 프로젝트 드롭다운 (전체/개별 프로젝트 선택)
+  - 선택된 프로젝트에 따라 대시보드/이슈 목록 필터링
+  - DoD: 프로젝트 전환 시 데이터가 해당 프로젝트로 필터링
+  - 사용자 스토리: "사용자가 프로젝트를 전환하면 해당 프로젝트의 데이터만 보인다"
+
+### Phase 2 검증
+> ✅ "Jira 이슈가 IssueHub 대시보드에 보이고, 프로젝트별로 필터링할 수 있는가?"
 
 ---
 
-## 12. 외부 연동 확장 (백엔드 인프라)
+## [EP-3] Phase 3: AI 코드 분석 (4~6주) — 핵심 차별점
 
-- [ ] **12-1. GitHub 양방향 동기화**
-  - [ ] GitHub App OAuth 설정
-  - [ ] Webhook 수신 (issues, pull_request 이벤트)
-  - [ ] GitHub Issue ↔ IssueHub Issue 매핑
-  - [ ] PR-이슈 자동 연결 (`fixes #123` 파싱)
-- [ ] **12-2. Notion 커넥터**
-  - [ ] Notion OAuth 설정
-  - [ ] Notion DB ↔ IssueHub Issue 동기화
-- [ ] **12-3. Slack 연동**
-  - [ ] Slack App 설정 (Bot Token)
-  - [ ] 알림 발송 (이슈 생성, SLA 위반, 에스컬레이션)
-  - [ ] Slash Commands (/issue create, /issue search)
+> 목표: 이슈를 클릭하면 AI가 분석한 관련 코드/파일/변경이력이 자동으로 보인다
+
+### Git 연동 `label:code-intel`
+
+- [ ] **P3-1. Git bare clone + fetch**
+  - `GitRepoMirror` 서비스: 프로젝트 등록 시 `git clone --bare`
+  - 주기적 `git fetch` (5분 또는 webhook)
+  - 디스크 사용량 모니터링
+  - DoD: 프로젝트의 Git 레포가 서버에 미러링되고 주기적 갱신
+  - 사용자 스토리: "사용자가 프로젝트에 Git URL을 등록하면 코드가 자동으로 동기화된다"
+
+### LLM 연동 `label:llm`
+
+- [ ] **P3-2. Ollama + LLM 연동**
+  - `OllamaLlmAdapter` (POST /api/generate, POST /api/embeddings)
+  - `ClaudeApiLlmAdapter` (폴백)
+  - 프로젝트별 LLM 라우팅 로직
+  - Docker Compose에 Ollama 서비스 추가
+  - DoD: Ollama API 호출로 텍스트 생성 + 임베딩 생성 성공
+  - 사용자 스토리: "시스템이 Ollama를 통해 코드 분석 결과를 생성할 수 있다"
+
+### 코드 인덱싱 `label:code-intel`
+
+- [ ] **P3-3. 코드 인덱싱 파이프라인 (축소판)**
+  - V6: code_chunks, symbol_index 테이블 생성
+  - 코드 청킹 (파일 단위, Phase 1에서는 함수 단위 AST 생략)
+  - 임베딩 생성 → pgvector 저장
+  - 파일 경로 기반 검색 (grep 수준, tree-sitter는 Phase 5)
+  - DoD: 프로젝트 레포의 코드가 인덱싱되어 검색 가능
+  - 사용자 스토리: "시스템이 Git 레포의 코드를 인덱싱하고 검색할 수 있다"
+
+### 티켓 품질 분석 `label:code-intel`
+
+- [ ] **P3-4. TicketEnrichmentService**
+  - 이슈 생성/수정 시 관련 코드 자동 검색 (pgvector 유사도)
+  - LLM으로 영향 파일/수정 제안 생성
+  - 이슈에 AI 분석 결과 저장 + API 응답에 포함
+  - DoD: 이슈 클릭 시 AI 분석 탭에 실제 코드 분석 결과 표시
+  - 사용자 스토리: "사용자가 이슈를 열면 AI가 분석한 관련 코드와 수정 제안이 보인다"
+
+- [ ] **P3-5. AI 분석 UI 실데이터 연동**
+  - AiAnalysisPanel: 목업 → 실제 API 데이터
+  - 영향 파일 클릭 시 코드 하이라이트 (선택적)
+  - "분석 다시 실행" 버튼
+  - DoD: 이슈 상세의 AI 분석이 실제 코드 분석 결과
+  - 사용자 스토리: "사용자가 AI 분석 탭에서 실제 영향 파일과 수정 제안을 확인할 수 있다"
+
+### Phase 3 검증
+> ✅ "이슈를 클릭하면 AI가 분석한 관련 코드/파일/변경이력이 자동으로 보이는가?"
 
 ---
 
-## 13. 코딩 에이전트 연동 (백엔드 인프라)
+## [EP-4] Phase 4: 안정화 + 피드백 (1~2주)
 
-- [ ] **13-1. CodingAgentPort 인터페이스**
-  - [ ] `createPullRequest(task)`, `getTaskStatus(taskId)`, `cancelTask(taskId)`
-- [ ] **13-2. OpenHandsAdapter**
-  - [ ] OpenHands REST API 연동
-  - [ ] 작업 생성: 이슈 컨텍스트 + 코드 분석 결과 전달
-  - [ ] 결과 수신: PR URL + 상태 업데이트
-- [ ] **13-3. 에이전트 실행 관리**
-  - [ ] 동시 실행 제한 (프로젝트당 1개)
-  - [ ] 타임아웃 설정 (30분)
-  - [ ] 실패 시 재시도 정책 (최대 1회)
-  - [ ] coding_tasks 상태 머신 (PENDING → RUNNING → COMPLETED/FAILED)
+> 목표: 내부 5명이 1주일간 실제 사용 후 "계속 쓰겠다"고 한다
+
+### 품질 `label:quality`
+
+- [ ] **P4-1. 테스트 보강**
+  - 백엔드: core 서비스 단위 테스트 80%+
+  - 백엔드: API 통합 테스트 (핵심 엔드포인트)
+  - 프론트: 핵심 훅 단위 테스트
+  - DoD: 테스트 커버리지 목표 달성
+
+- [ ] **P4-2. 에러 처리 + 모니터링**
+  - 프론트: 글로벌 에러 바운더리 동작 확인
+  - 백엔드: 로깅 포맷 정리 (JSON structured logging)
+  - 에러 트래킹 설정 (Sentry 또는 대안)
+  - DoD: 에러 발생 시 알림 수신
+
+- [ ] **P4-3. 배포 + 사용자 피드백**
+  - 내부 5명 대상 배포
+  - 1주일 사용 후 피드백 수집
+  - 피드백 기반 백로그 조정
+  - DoD: 5명 중 3명 이상 "계속 쓰겠다"
+
+### Phase 4 검증
+> ✅ "5명이 1주일 쓰고 '계속 쓰겠다'고 하는가?"
+
+---
+
+## MVP 이후 (Phase 5+)
+
+아래는 MVP 검증 후 진행. 우선순위는 피드백 기반으로 결정.
+
+### Phase 5: 자동화 + 추가 연동
+- [ ] 자동화 규칙 엔진 (트리거-조건-액션, SLA 기본)
+- [ ] GitHub 양방향 동기화
+- [ ] 코딩 에이전트 연동 (OpenHands)
+- [ ] Slack 웹훅 알림
+
+### Phase 6: 고도화
+- [ ] SLA 일시정지/재개 + 에스컬레이션 체인
+- [ ] Notion/Discord 연동
+- [ ] tree-sitter AST 분석 (코드 인덱싱 정식)
+- [ ] 하이브리드 배포 모드 (Agent)
+
+### Phase 7: 확장
+- [ ] 정책 관리 (CRUD + 승인 워크플로우)
+- [ ] Project Wizard (아이디어 → MVP 생성)
+- [ ] SaaS 모드 + 멀티테넌트 RLS
 
 ---
 
 ## 의존성
 
 ```
-[0] 구조 셋업 ──→ [1] 대시보드 ──→ [2] 이슈 상세 ──→ [3] 이슈 목록
-                                                          │
-                                                    (목업 Phase 완료)
-                                                          │
-[7] DB 스키마 ──┬→ [8] 이슈 CRUD+Jira ──→ [12] 외부 연동  │
-               ├→ [9] Git clone ──┐                       │
-               └→ [11] Ollama ────┼→ [10] 코드 인덱싱 ──→ [13] 코딩 에이전트
-                                  │
-               [1~3 완료] ──→ [4] 프로젝트 관리 ──→ [5] 자동화 ──→ [6] 자동 개발
+[P0] 기반 정리 ──→ [P1] 인증 + CRUD ──→ [P2] Jira + 대시보드 ──→ [P3] AI 코드 분석 ──→ [P4] 안정화
+                      │                      │
+                      ├── P1-1,2 (인증)      ├── P2-1 (Jira)
+                      ├── P1-3,4 (프로젝트)  ├── P2-3 (차트)
+                      └── P1-5,6 (이슈)      └── P2-4 (프로젝트 스위처)
 ```
 
-### 병렬 작업 가능 조합
+### 병렬 가능
 
-- **[0] + [7]**: 프론트 구조 셋업과 DB 스키마는 동시 진행 가능
-- **[1] + [8]**: 대시보드 목업과 이슈 CRUD API 동시 진행 가능
-- **[9] + [11]**: Git clone과 Ollama 설정은 동시 진행 가능
-- **[12-1] + [12-2] + [12-3]**: GitHub/Notion/Slack 연동은 독립적으로 병렬 가능
+| 조합 | 설명 |
+|------|------|
+| P0 백엔드 + P0 프론트 | 기반 정리 동시 |
+| P1-1(JWT) + P1-3(프로젝트 BE) | 인증과 프로젝트 API 동시 |
+| P1-4(프로젝트 UI) + P1-5(이슈 BE) | FE/BE 병렬 |
+| P3-1(Git) + P3-2(Ollama) | Git과 LLM 동시 셋업 |

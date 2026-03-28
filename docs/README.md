@@ -31,6 +31,13 @@
 - [API 명세](engineering/API-SPEC.md): REST API 엔드포인트 상세
 - [외부 연동 가이드](engineering/INTEGRATION.md): Jira, GitHub, Slack, Teams, Discord
 - [보안 아키텍처](engineering/SECURITY.md): 취약점 분석, OWASP 대응, 보안 로드맵
+- [프론트엔드 아키텍처 명세서](engineering/FRONTEND-SPEC.md): 프론트엔드 아키텍처 명세서
+- [백엔드 아키텍처 명세서](engineering/BACKEND-SPEC.md): 백엔드 아키텍처 명세서
+
+## 기타
+
+- [MVP 개발 TODO](TODO.md): MVP 개발 TODO
+- [AI 코드 분석 플랫폼 설계서](superpowers/specs/2026-03-22-issuehub-ai-code-platform-design.md): AI 코드 분석 플랫폼 설계서
 
 ## 의사결정 기록 (Decisions)
 
