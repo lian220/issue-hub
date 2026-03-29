@@ -56,6 +56,8 @@ class IssuePersistenceAdapter(
     private fun IssueJpaEntity.toDomain(): Issue {
         return Issue(
             id = id,
+            orgId = orgId,
+            projectId = projectId,
             externalId = externalId,
             sourcePlatform = sourcePlatform,
             title = title,
@@ -81,6 +83,8 @@ class IssuePersistenceAdapter(
     private fun Issue.toEntity(): IssueJpaEntity {
         return IssueJpaEntity(
             id = id,
+            orgId = orgId,
+            projectId = projectId,
             externalId = externalId,
             sourcePlatform = sourcePlatform,
             title = title,

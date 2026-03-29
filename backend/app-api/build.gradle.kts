@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":core-automation"))
     implementation(project(":core-connector"))
     implementation(project(":infra-persistence"))
-    implementation(project(":infra-kafka"))
+    // implementation(project(":infra-kafka"))  // Phase 2 이후 활성화
     implementation(project(":infra-webhook"))
 
     implementation(libs.bundles.spring.web)

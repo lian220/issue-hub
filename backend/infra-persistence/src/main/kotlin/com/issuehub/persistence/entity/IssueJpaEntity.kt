@@ -18,6 +18,12 @@ class IssueJpaEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "org_id")
+    var orgId: UUID? = null,
+
+    @Column(name = "project_id")
+    var projectId: UUID? = null,
+
     @Column(name = "external_id")
     var externalId: String? = null,
 

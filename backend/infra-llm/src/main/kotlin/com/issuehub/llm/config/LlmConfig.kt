@@ -6,8 +6,8 @@ package com.issuehub.llm.config
  * application.yml 예시:
  * issuehub:
  *   ai:
- *     llm-provider: gemini       # gemini | openai | ollama
- *     embedding-provider: gemini  # gemini | openai | ollama
- *     pii-detection: regex        # regex | llm
+ *     llm-provider: ollama        # ollama | openai | claude (기본: ollama)
+ *     embedding-provider: ollama   # ollama | openai | claude (기본: ollama)
+ *     pii-detection: regex         # regex | llm
  */
 class LlmConfig

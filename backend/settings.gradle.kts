@@ -8,7 +8,7 @@ include(
     "core-connector",
     "core-ai",
     "infra-persistence",
-    "infra-kafka",
+    // "infra-kafka",  // Phase 2 이후 활성화
     "infra-webhook",
     "infra-llm",
     "app-api",

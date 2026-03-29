@@ -9,11 +9,14 @@ import com.issuehub.issue.port.inbound.SearchIssueUseCase.SearchIssueQuery
 import com.issuehub.issue.port.inbound.SearchIssueUseCase.SearchResult
 import com.issuehub.issue.port.inbound.UpdateIssueUseCase
 import com.issuehub.issue.port.inbound.UpdateIssueUseCase.UpdateIssueCommand
+import com.issuehub.domain.exception.DomainException
 import com.issuehub.issue.port.outbound.LoadIssuePort
 import com.issuehub.issue.port.outbound.SaveIssuePort
+import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.UUID
 
+@Service
 class IssueService(
     private val loadIssuePort: LoadIssuePort,
     private val saveIssuePort: SaveIssuePort
@@ -37,7 +40,7 @@ class IssueService(
 
     override fun updateIssue(command: UpdateIssueCommand): Issue {
         val existing = loadIssuePort.findById(command.issueId)
-            ?: throw IllegalArgumentException("Issue not found: ${command.issueId}")
+            ?: throw DomainException.EntityNotFound("Issue", command.issueId)
 
         val updated = existing.copy(
             title = command.title ?: existing.title,
@@ -54,7 +57,7 @@ class IssueService(
 
     override fun changeStatus(issueId: UUID, status: IssueStatus): Issue {
         val existing = loadIssuePort.findById(issueId)
-            ?: throw IllegalArgumentException("Issue not found: $issueId")
+            ?: throw DomainException.EntityNotFound("Issue", issueId)
 
         val updated = existing.copy(status = status, updatedAt = Instant.now())
         return saveIssuePort.save(updated)
@@ -62,7 +65,7 @@ class IssueService(
 
     override fun assignIssue(issueId: UUID, assigneeId: UUID): Issue {
         val existing = loadIssuePort.findById(issueId)
-            ?: throw IllegalArgumentException("Issue not found: $issueId")
+            ?: throw DomainException.EntityNotFound("Issue", issueId)
 
         val updated = existing.copy(assigneeId = assigneeId, updatedAt = Instant.now())
         return saveIssuePort.save(updated)

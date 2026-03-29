@@ -8,6 +8,8 @@ import java.util.UUID
 
 data class Issue(
     val id: UUID = UUID.randomUUID(),
+    val orgId: UUID? = null,
+    val projectId: UUID? = null,
     val externalId: String? = null,
     val sourcePlatform: String? = null,
     val title: String,

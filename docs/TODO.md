@@ -22,14 +22,14 @@
 
 ### 백엔드 기반 `label:infra`
 
-- [ ] **P0-1. 스켈레톤 코드 정리**
-  - Issue 도메인 모델에 `orgId`, `projectId` 추가
-  - `DomainException` sealed class 생성 (EntityNotFound, BusinessRuleViolation, ValidationFailed)
-  - `IssueService`에 `@Service` + 예외 체계 적용
-  - `infra-kafka` 모듈 비활성화 (Phase 2 이후)
-  - `bin/` 디렉토리 삭제 + `.gitignore` 확인
-  - `infra-llm`: GeminiAdapter → OllamaAdapter 기본으로 변경
-  - DoD: `./gradlew build` 성공
+- [x] ~~**P0-1. 스켈레톤 코드 정리**~~
+  - ~~Issue 도메인 모델에 `orgId`, `projectId` 추가~~
+  - ~~`DomainException` sealed class 생성 (EntityNotFound, BusinessRuleViolation, ValidationFailed)~~
+  - ~~`IssueService`에 `@Service` + 예외 체계 적용~~
+  - ~~`infra-kafka` 모듈 비활성화 (Phase 2 이후)~~
+  - ~~`bin/` 디렉토리 삭제 + `.gitignore` 확인~~
+  - ~~`infra-llm`: GeminiAdapter → OllamaAdapter 기본으로 변경~~
+  - ~~DoD: `./gradlew build` 성공~~
 
 - [ ] **P0-2. API 공통 인프라**
   - `ApiResponse<T>` 공용 래퍼 (success, data, error, timestamp)
