@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   ExternalLink,
@@ -193,7 +194,7 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
         <div className="space-y-4">
           <AutoDevSection
             tasks={tasks}
-            onStartAutoDev={() => alert("자동 개발 시작! (목업)")}
+            onStartAutoDev={() => toast.info("자동 개발 시작! (목업)")}
           />
 
           <Card>
