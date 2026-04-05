@@ -1,171 +1,107 @@
 # IssueHub 사용자 플로우 (User Flow)
 
-> Phase 0~4 전체 사용자 여정을 섹션별로 분리
+> Phase 0~4 전체 사용자 여정을 포괄하는 플로우차트
 
----
-
-## 1. 인증 + 온보딩
+## 전체 사용자 플로우
 
 ```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart LR
-    START([사용자 접속])
-    START --> LOGIN{로그인 여부}
+flowchart TD
+    START([사용자 접속]) --> LOGIN{로그인 여부}
     LOGIN -->|미인증| SIGNUP[회원가입 / 로그인]
-    LOGIN -->|인증됨| DASHBOARD([대시보드])
+    LOGIN -->|인증됨| DASHBOARD
 
-    SIGNUP --> FIRST{첫 로그인?}
-    FIRST -->|No| DASHBOARD
-    FIRST -->|Yes| ORG[조직 설정]
-    ORG --> PROJ[프로젝트 등록]
-    PROJ --> INVITE[팀원 초대]
-    INVITE --> POLICY[필수 정책 확인]
-    POLICY --> DASHBOARD
+    SIGNUP --> FIRST_LOGIN{첫 로그인?}
+    FIRST_LOGIN -->|Yes| ONBOARD[온보딩]
+    FIRST_LOGIN -->|No| DASHBOARD
 
-    style START fill:#e1f5fe,stroke:#0288d1
-    style DASHBOARD fill:#fff3e0,stroke:#f57c00
+    subgraph ONBOARDING [온보딩 Phase 0-1]
+        ONBOARD --> SET_ORG[조직 설정]
+        SET_ORG --> CREATE_PROJECT[프로젝트 등록\nGit URL 입력]
+        CREATE_PROJECT --> INVITE_MEMBER[팀원 초대]
+        INVITE_MEMBER --> READ_POLICY[필수 정책 읽음 확인]
+    end
+
+    READ_POLICY --> DASHBOARD
+
+    subgraph DASH [대시보드 Phase 1]
+        DASHBOARD[대시보드 홈]
+        DASHBOARD --> SUMMARY[요약 카드\nOPEN / IN_PROGRESS / RESOLVED / SLA 위반]
+        DASHBOARD --> RECENT[최근 이슈 목록]
+        DASHBOARD --> WORKLOAD[팀 워크로드 차트]
+        DASHBOARD --> SLA_STATUS[SLA 현황]
+    end
+
+    SUMMARY -->|클릭| ISSUE_LIST
+    RECENT -->|행 클릭| ISSUE_DETAIL
+    SLA_STATUS -->|위반 클릭| ISSUE_DETAIL
+
+    subgraph ISSUES [이슈 관리 Phase 1]
+        ISSUE_LIST[이슈 목록\nDataTable + 필터 + 검색]
+        ISSUE_LIST -->|행 클릭| ISSUE_DETAIL[이슈 상세]
+        ISSUE_LIST -->|+ 새 이슈| ISSUE_CREATE[이슈 생성 폼\n제목 / 설명 / 우선순위 / 담당자]
+        ISSUE_CREATE --> ISSUE_LIST
+
+        ISSUE_DETAIL --> EDIT_ISSUE[이슈 수정]
+        ISSUE_DETAIL --> STATUS_CHANGE[상태 변경\nOPEN → IN_PROGRESS → RESOLVED]
+        ISSUE_DETAIL --> ASSIGN[담당자 변경]
+    end
+
+    subgraph AI_ANALYSIS [AI 코드 분석 Phase 3]
+        ISSUE_DETAIL --> AI_TAB[AI 분석 탭]
+        AI_TAB --> AFFECTED_FILES[영향 파일 목록\n파일:라인 + 함수명 + 이유]
+        AI_TAB --> CHANGE_HISTORY[최근 변경 이력\n누가 / 언제 / 무엇을]
+        AI_TAB --> SIMILAR_ISSUES[유사 과거 이슈]
+        AI_TAB --> FIX_SUGGEST[AI 수정 제안]
+        AFFECTED_FILES -->|파일 클릭| CODE_VIEW[코드 하이라이트 뷰]
+    end
+
+    subgraph AUTO_DEV [자동 개발 Phase 3]
+        AI_TAB --> AUTO_DEV_BTN[자동 개발 시작 버튼]
+        AUTO_DEV_BTN --> CONFIRM_DIALOG{확인 다이얼로그}
+        CONFIRM_DIALOG -->|확인| AGENT_RUN[코딩 에이전트 실행\nOpenHands]
+        CONFIRM_DIALOG -->|취소| AI_TAB
+        AGENT_RUN --> PROGRESS[실시간 진행 상태\n분석 중 → 수정 중 → 테스트 중]
+        PROGRESS --> PR_CREATED[PR 생성 완료\nPR URL + 이슈 자동 연결]
+        PR_CREATED --> REVIEW_PR[PR 리뷰]
+        REVIEW_PR --> STATUS_CHANGE
+    end
+
+    subgraph PROJECT_MGMT [프로젝트 관리 Phase 1]
+        DASHBOARD -->|사이드바| PROJECT_LIST[프로젝트 목록]
+        PROJECT_LIST --> PROJECT_CREATE[프로젝트 생성\n이름 / Git URL / 브랜치]
+        PROJECT_LIST --> PROJECT_SETTINGS[프로젝트 설정\n코드 분석 모드 / LLM 선택]
+        PROJECT_LIST -->|프로젝트 스위처| SWITCH_PROJECT[프로젝트 전환\n→ 대시보드/이슈 필터링]
+    end
+
+    subgraph CONNECTOR [커넥터 설정 Phase 2]
+        DASHBOARD -->|사이드바| CONNECTOR_LIST[커넥터 관리]
+        CONNECTOR_LIST --> ADD_CONNECTOR[+ 새 커넥터\nJira / GitHub / Slack]
+        ADD_CONNECTOR --> OAUTH[OAuth 인증 플로우]
+        OAUTH --> SELECT_PROJECT_SYNC[동기화 프로젝트 선택]
+        SELECT_PROJECT_SYNC --> FIELD_MAPPING[필드 매핑 설정\nJira 필드 ↔ IssueHub 필드]
+        FIELD_MAPPING --> SYNC_STATUS[동기화 상태 확인\n성공 ✅ / 실패 ❌ / 마지막 동기화]
+    end
+
+    subgraph AUTOMATION [자동화 규칙 Phase 2+]
+        DASHBOARD -->|사이드바| RULE_LIST[자동화 규칙 목록]
+        RULE_LIST --> CREATE_RULE[+ 새 규칙]
+        CREATE_RULE --> TRIGGER[1. 트리거 선택\n이슈 생성 / 상태 변경 / SLA 위반]
+        TRIGGER --> CONDITION[2. 조건 설정\n제목 포함 / 소스 = / 우선순위 =]
+        CONDITION --> ACTION[3. 액션 설정\n우선순위 변경 / 팀 배정 / 알림 발송]
+        ACTION --> DRY_RUN[Dry-Run 테스트\n최근 10건 시뮬레이션]
+        DRY_RUN --> ACTIVATE[규칙 활성화]
+    end
+
+    style START fill:#e1f5fe
+    style DASHBOARD fill:#fff3e0
+    style ISSUE_DETAIL fill:#f3e5f5
+    style AI_TAB fill:#e8f5e9
+    style AUTO_DEV_BTN fill:#ffebee
 ```
-
----
-
-## 2. 대시보드
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart LR
-    DASHBOARD([대시보드 홈])
-
-    DASHBOARD --> SUMMARY[요약 카드]
-    DASHBOARD --> RECENT[최근 이슈 목록]
-    DASHBOARD --> WORKLOAD[팀 워크로드 차트]
-    DASHBOARD --> SLA[SLA 현황]
-
-    SUMMARY -->|클릭| ISSUE_LIST([이슈 목록])
-    RECENT -->|행 클릭| ISSUE_DETAIL([이슈 상세])
-    SLA -->|위반 클릭| ISSUE_DETAIL
-
-    style DASHBOARD fill:#fff3e0,stroke:#f57c00
-    style ISSUE_LIST fill:#e8eaf6,stroke:#3f51b5
-    style ISSUE_DETAIL fill:#f3e5f5,stroke:#9c27b0
-```
-
----
-
-## 3. 이슈 관리
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart TD
-    LIST([이슈 목록])
-
-    LIST -->|행 클릭| DETAIL[이슈 상세]
-    LIST -->|새 이슈| CREATE[이슈 생성 폼]
-    CREATE --> LIST
-
-    DETAIL --> EDIT[이슈 수정]
-    DETAIL --> STATUS[상태 변경]
-    DETAIL --> ASSIGN[담당자 변경]
-    DETAIL --> AI([AI 분석 탭])
-
-    style LIST fill:#e8eaf6,stroke:#3f51b5
-    style DETAIL fill:#f3e5f5,stroke:#9c27b0
-    style AI fill:#e8f5e9,stroke:#4caf50
-```
-
----
-
-## 4. AI 코드 분석 (Phase 3)
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart TD
-    AI([AI 분석 탭])
-
-    AI --> FILES[영향 파일 목록]
-    AI --> HISTORY[최근 변경 이력]
-    AI --> SIMILAR[유사 과거 이슈]
-    AI --> FIX[AI 수정 제안]
-
-    FILES -->|파일 클릭| CODE[코드 하이라이트 뷰]
-
-    style AI fill:#e8f5e9,stroke:#4caf50
-```
-
----
-
-## 5. 자동 개발 (Phase 3)
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart LR
-    AI([AI 분석 탭]) --> BTN[자동 개발 시작]
-    BTN --> CONFIRM{확인?}
-    CONFIRM -->|취소| AI
-    CONFIRM -->|확인| AGENT[OpenHands 실행]
-    AGENT --> PROGRESS[진행 상태]
-    PROGRESS --> PR[PR 생성 완료]
-    PR --> REVIEW[PR 리뷰]
-
-    style AI fill:#e8f5e9,stroke:#4caf50
-    style BTN fill:#ffebee,stroke:#e53935
-```
-
----
-
-## 6. 프로젝트 관리 (Phase 1)
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart LR
-    SIDEBAR([사이드바]) --> LIST[프로젝트 목록]
-    LIST --> CREATE[프로젝트 생성]
-    LIST --> SETTINGS[프로젝트 설정]
-    LIST --> SWITCH[프로젝트 전환]
-
-    style SIDEBAR fill:#fff3e0,stroke:#f57c00
-```
-
----
-
-## 7. 커넥터 설정 (Phase 2)
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart LR
-    SIDEBAR([사이드바]) --> LIST[커넥터 관리]
-    LIST --> ADD[새 커넥터 추가]
-    ADD --> OAUTH[OAuth 인증]
-    OAUTH --> SELECT[동기화 프로젝트 선택]
-    SELECT --> MAPPING[필드 매핑 설정]
-    MAPPING --> STATUS[동기화 상태 확인]
-
-    style SIDEBAR fill:#fff3e0,stroke:#f57c00
-```
-
----
-
-## 8. 자동화 규칙 (Phase 2+)
-
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 20}}}%%
-flowchart LR
-    SIDEBAR([사이드바]) --> LIST[규칙 목록]
-    LIST --> CREATE[새 규칙]
-    CREATE --> TRIGGER[1. 트리거]
-    TRIGGER --> COND[2. 조건]
-    COND --> ACTION[3. 액션]
-    ACTION --> DRY[Dry-Run 테스트]
-    DRY --> ACTIVE[규칙 활성화]
-
-    style SIDEBAR fill:#fff3e0,stroke:#f57c00
-```
-
----
 
 ## Phase별 기능 범위
 
 ```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '20px', 'fontFamily': 'arial'}, 'flowchart': {'nodeSpacing': 30, 'rankSpacing': 50, 'padding': 15}}}%%
 flowchart LR
     subgraph P0 [Phase 0: 기반]
         P0_1[스켈레톤 정리]
