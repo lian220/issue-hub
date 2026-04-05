@@ -13,20 +13,12 @@ import {
   History,
   MessageSquare,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AiAnalysisPanel } from "./ai-analysis-panel";
 import { AutoDevSection } from "./auto-dev-section";
-import {
-  MOCK_ISSUES,
-  MOCK_AI_ANALYSES,
-  MOCK_CODING_TASKS,
-  MOCK_TEAM,
-  SOURCE_CONFIG,
-  PRIORITY_CONFIG,
-} from "@/constants/mock-data";
-import type { Issue } from "@/types/issue";
+import { SOURCE_CONFIG, PRIORITY_CONFIG } from "@/constants/mock-data";
+import { useIssueDetail } from "../hooks/useIssueDetail";
 
 interface IssueDetailProps {
   issueId: string;
@@ -36,9 +28,9 @@ type Tab = "detail" | "ai" | "history" | "comments";
 
 export function IssueDetail({ issueId }: IssueDetailProps) {
   const [activeTab, setActiveTab] = useState<Tab>("ai");
+  const { data: detail } = useIssueDetail(issueId);
 
-  const issue = MOCK_ISSUES.find((i) => i.id === issueId);
-  if (!issue) {
+  if (!detail) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <p>이슈를 찾을 수 없습니다.</p>
@@ -49,9 +41,7 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
     );
   }
 
-  const analysis = MOCK_AI_ANALYSES[issueId];
-  const tasks = MOCK_CODING_TASKS.filter((t) => t.issueId === issueId);
-  const assignee = MOCK_TEAM.find((m) => m.id === issue.assigneeId);
+  const { issue, analysis, codingTasks: tasks, assignee } = detail;
   const source = SOURCE_CONFIG[issue.source];
   const priority = PRIORITY_CONFIG[issue.priority];
 

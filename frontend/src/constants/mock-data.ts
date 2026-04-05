@@ -1,4 +1,4 @@
-import type { Issue, Platform, IssueStatus, IssuePriority } from "@/types/issue";
+import type { Issue, Platform, IssuePriority } from "@/types/issue";
 
 // ── 프로젝트 목업 ──
 export interface Project {

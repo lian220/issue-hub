@@ -8,9 +8,11 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users } from "lucide-react";
-import { MOCK_TEAM } from "@/constants/mock-data";
+import { useDashboardStats } from "../hooks/useDashboardStats";
 
 export function TeamWorkload() {
+  const { data: dashboard } = useDashboardStats();
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
@@ -19,7 +21,7 @@ export function TeamWorkload() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {MOCK_TEAM.map((member) => {
+          {dashboard.teamMembers.map((member) => {
             const total = member.openIssues + member.inProgressIssues;
             const maxIssues = 10;
             const percentage = Math.min((total / maxIssues) * 100, 100);

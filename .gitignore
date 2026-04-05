@@ -62,6 +62,12 @@ coverage/
 *.lcov
 .nyc_output/
 
+# Screenshots / mockup images (root only)
+/*.png
+
+# Playwright MCP
+.playwright-mcp/
+
 # Misc
 *.bak
 *.tmp

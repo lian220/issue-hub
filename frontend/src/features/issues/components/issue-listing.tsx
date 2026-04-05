@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { issueColumns } from "./issue-tables/columns";
+import { createIssueColumns } from "./issue-tables/columns";
 import { IssueToolbar } from "./issue-tables/toolbar";
-import { MOCK_ISSUES } from "@/constants/mock-data";
+import { useIssueList } from "../hooks/use-issues";
 import type { Issue } from "@/types/issue";
 
 export function IssueListing() {
@@ -19,24 +19,8 @@ export function IssueListing() {
     source: null as string | null,
   });
 
-  const filteredIssues = useMemo(() => {
-    return MOCK_ISSUES.filter((issue) => {
-      if (filters.search) {
-        const q = filters.search.toLowerCase();
-        if (
-          !issue.title.toLowerCase().includes(q) &&
-          !issue.description?.toLowerCase().includes(q) &&
-          !issue.externalId?.toLowerCase().includes(q)
-        ) {
-          return false;
-        }
-      }
-      if (filters.status && issue.status !== filters.status) return false;
-      if (filters.priority && issue.priority !== filters.priority) return false;
-      if (filters.source && issue.source !== filters.source) return false;
-      return true;
-    });
-  }, [filters]);
+  const { data: filteredIssues, lookups } = useIssueList(filters);
+  const columns = useMemo(() => createIssueColumns(lookups), [lookups]);
 
   return (
     <div className="space-y-4">
@@ -56,7 +40,7 @@ export function IssueListing() {
       <IssueToolbar filters={filters} onFiltersChange={setFilters} />
 
       <DataTable
-        columns={issueColumns}
+        columns={columns}
         data={filteredIssues}
         onRowClick={(issue: Issue) => router.push(`/issues/${issue.id}`)}
       />
