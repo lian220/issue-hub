@@ -1,6 +1,6 @@
 # IssueHub MVP TODO
 
-> 최종 수정일: 2026-04-03
+> 최종 수정일: 2026-04-05
 > Jira: https://liandy220-developer.atlassian.net/jira/software/projects/LIH
 > 구조: 에픽 = Phase, 스토리 = 사용자 스토리, 라벨 = 도메인
 > 참조: Expert Panel 결과 (2026-03-25, 2026-04-01), FRONTEND-SPEC.md, BACKEND-SPEC.md
@@ -49,7 +49,7 @@
 
 - [x] **P0-5. UI 인프라 정리** — [LIH-2](https://liandy220-developer.atlassian.net/browse/LIH-2) ✅ 완료
 
-- [ ] **P0-6. Mock 추상화 레이어** — [LIH-3](https://liandy220-developer.atlassian.net/browse/LIH-3)
+- [x] **P0-6. Mock 추상화 레이어** — [LIH-3](https://liandy220-developer.atlassian.net/browse/LIH-3) ✅ 완료
   - 각 feature에 `use-{feature}.ts` 훅 생성 (mock 데이터 반환)
   - 컴포넌트에서 `MOCK_*` 직접 import 제거 → 훅으로 교체
   - `features/dashboard/hooks/use-dashboard-stats.ts`

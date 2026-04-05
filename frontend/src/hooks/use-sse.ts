@@ -52,6 +52,8 @@ export function useSSE({
   }, []);
 
   useEffect(() => {
+    retriesRef.current = 0;
+
     const connect = () => {
       cleanup();
 
@@ -62,16 +64,19 @@ export function useSSE({
       eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
+        if (eventSourceRef.current !== eventSource) return;
         setIsConnected(true);
         setError(null);
         retriesRef.current = 0;
       };
 
       eventSource.onmessage = (event) => {
+        if (eventSourceRef.current !== eventSource) return;
         onMessage?.(event);
       };
 
       eventSource.onerror = (err) => {
+        if (eventSourceRef.current !== eventSource) return;
         setIsConnected(false);
         setError(err);
         onError?.(err);
