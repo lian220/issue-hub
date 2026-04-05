@@ -32,6 +32,8 @@ export function useSSE({
   const retriesRef = useRef(0);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const connectRef = useRef<() => void>(() => {});
+
   const cleanup = useCallback(() => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
@@ -44,51 +46,52 @@ export function useSSE({
     setIsConnected(false);
   }, []);
 
-  const connect = useCallback(() => {
-    cleanup();
-
-    if (!enabled) return;
-
-    const url = getSSEUrl(path);
-    const eventSource = new EventSource(url);
-    eventSourceRef.current = eventSource;
-
-    eventSource.onopen = () => {
-      setIsConnected(true);
-      setError(null);
-      retriesRef.current = 0;
-    };
-
-    eventSource.onmessage = (event) => {
-      onMessage?.(event);
-    };
-
-    eventSource.onerror = (err) => {
-      setIsConnected(false);
-      setError(err);
-      onError?.(err);
-
-      eventSource.close();
-      eventSourceRef.current = null;
-
-      if (retriesRef.current < maxRetries) {
-        retriesRef.current += 1;
-        reconnectTimerRef.current = setTimeout(() => {
-          connect();
-        }, reconnectInterval * retriesRef.current);
-      }
-    };
-  }, [path, enabled, onMessage, onError, reconnectInterval, maxRetries, cleanup]);
-
   const reconnect = useCallback(() => {
     retriesRef.current = 0;
-    connect();
-  }, [connect]);
+    connectRef.current();
+  }, []);
 
   useEffect(() => {
+    const connect = () => {
+      cleanup();
+
+      if (!enabled) return;
+
+      const url = getSSEUrl(path);
+      const eventSource = new EventSource(url);
+      eventSourceRef.current = eventSource;
+
+      eventSource.onopen = () => {
+        setIsConnected(true);
+        setError(null);
+        retriesRef.current = 0;
+      };
+
+      eventSource.onmessage = (event) => {
+        onMessage?.(event);
+      };
+
+      eventSource.onerror = (err) => {
+        setIsConnected(false);
+        setError(err);
+        onError?.(err);
+
+        eventSource.close();
+        eventSourceRef.current = null;
+
+        if (retriesRef.current < maxRetries) {
+          retriesRef.current += 1;
+          reconnectTimerRef.current = setTimeout(() => {
+            connectRef.current();
+          }, reconnectInterval * retriesRef.current);
+        }
+      };
+    };
+
+    connectRef.current = connect;
     connect();
     return cleanup;
-  }, [connect, cleanup]);
+  }, [path, enabled, onMessage, onError, reconnectInterval, maxRetries, cleanup]);
 
   return { isConnected, error, reconnect };
 }

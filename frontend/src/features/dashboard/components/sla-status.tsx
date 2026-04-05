@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import {
@@ -6,14 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MOCK_ISSUES } from "@/constants/mock-data";
+import { useDashboardStats } from "../hooks/useDashboardStats";
 
 export function SlaStatus() {
-  const totalIssues = MOCK_ISSUES.filter(
-    (i) => i.status !== "RESOLVED" && i.status !== "CLOSED"
-  ).length;
-  const breachCount = MOCK_ISSUES.filter((i) => i.slaBreach).length;
-  const responseRate = totalIssues > 0 ? ((totalIssues - breachCount) / totalIssues) * 100 : 100;
+  const { data: dashboard } = useDashboardStats();
+  const { breachCount, responseRate } = dashboard.sla;
 
   return (
     <Card>

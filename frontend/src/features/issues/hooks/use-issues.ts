@@ -1,66 +1,57 @@
 "use client";
 
-import useSWR from "swr";
-import { apiClient } from "@/lib/api";
-import { Issue } from "@/types/issue";
-import { PagedResponse, IssueFilterParams } from "@/types/api";
+import { useMemo } from "react";
 
-function buildQueryString(params: IssueFilterParams): string {
-  const searchParams = new URLSearchParams();
-  searchParams.set("page", String(params.page));
-  searchParams.set("size", String(params.size));
-  if (params.status) searchParams.set("status", params.status);
-  if (params.priority) searchParams.set("priority", params.priority);
-  if (params.source) searchParams.set("source", params.source);
-  if (params.assigneeId) searchParams.set("assigneeId", params.assigneeId);
-  if (params.search) searchParams.set("search", params.search);
-  if (params.sort) {
-    searchParams.set("sort", `${params.sort.field},${params.sort.direction}`);
-  }
-  return searchParams.toString();
+import {
+  MOCK_ISSUES,
+  MOCK_AI_ANALYSES,
+  MOCK_TEAM,
+  type AiAnalysis,
+  type TeamMember,
+} from "@/constants/mock-data";
+
+// ── SWR 기반 (API 연동 시 활성화) ──
+// import useSWR from "swr";
+// import { apiClient } from "@/lib/api";
+// import { PagedResponse, IssueFilterParams } from "@/types/api";
+
+export interface IssueFilters {
+  search: string;
+  status: string | null;
+  priority: string | null;
+  source: string | null;
 }
 
-const fetcher = (url: string) => apiClient.get<PagedResponse<Issue>>(url);
-
-export function useIssues(params: IssueFilterParams) {
-  const queryString = buildQueryString(params);
-  const key = `/issues?${queryString}`;
-
-  const { data, error, isLoading, mutate } = useSWR<PagedResponse<Issue>>(
-    key,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000,
-    }
-  );
-
-  return {
-    issues: data?.content ?? [],
-    totalElements: data?.totalElements ?? 0,
-    totalPages: data?.totalPages ?? 0,
-    isLoading,
-    isError: !!error,
-    error,
-    mutate,
-  };
+export interface IssueListLookups {
+  aiAnalyses: Record<string, AiAnalysis>;
+  teamMembers: TeamMember[];
 }
 
-export function useIssue(id: string | null) {
-  const { data, error, isLoading, mutate } = useSWR<Issue>(
-    id ? `/issues/${id}` : null,
-    (url: string) => apiClient.get<Issue>(url),
-    {
-      revalidateOnFocus: false,
-    }
-  );
+/** 이슈 목록 + 필터링 훅 (Mock) — API 연동 시 내부만 SWR/fetch로 교체 */
+export function useIssueList(filters: IssueFilters) {
+  const data = useMemo(() => {
+    return MOCK_ISSUES.filter((issue) => {
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        if (
+          !issue.title.toLowerCase().includes(q) &&
+          !issue.description?.toLowerCase().includes(q) &&
+          !issue.externalId?.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+      if (filters.status && issue.status !== filters.status) return false;
+      if (filters.priority && issue.priority !== filters.priority) return false;
+      if (filters.source && issue.source !== filters.source) return false;
+      return true;
+    });
+  }, [filters]);
 
-  return {
-    issue: data,
-    isLoading,
-    isError: !!error,
-    error,
-    mutate,
+  const lookups: IssueListLookups = {
+    aiAnalyses: MOCK_AI_ANALYSES,
+    teamMembers: MOCK_TEAM,
   };
+
+  return { data, lookups, isLoading: false, error: null };
 }

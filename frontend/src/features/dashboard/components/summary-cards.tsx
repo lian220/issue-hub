@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   CircleDot,
@@ -6,7 +8,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MOCK_ISSUES } from "@/constants/mock-data";
+import { useDashboardStats } from "../hooks/useDashboardStats";
 
 const cards = [
   {
@@ -52,12 +54,8 @@ interface SummaryData {
 }
 
 export function SummaryCards() {
-  const data: SummaryData = {
-    totalOpen: MOCK_ISSUES.filter((i) => i.status === "OPEN").length,
-    totalInProgress: MOCK_ISSUES.filter((i) => i.status === "IN_PROGRESS").length,
-    totalResolved: MOCK_ISSUES.filter((i) => i.status === "RESOLVED").length,
-    totalSlaBreach: MOCK_ISSUES.filter((i) => i.slaBreach).length,
-  };
+  const { data: dashboard } = useDashboardStats();
+  const data: SummaryData = dashboard.summary;
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

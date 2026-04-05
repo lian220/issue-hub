@@ -9,12 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_ISSUES, SOURCE_CONFIG, PRIORITY_CONFIG } from "@/constants/mock-data";
+import { SOURCE_CONFIG, PRIORITY_CONFIG } from "@/constants/mock-data";
+import { useDashboardStats } from "../hooks/useDashboardStats";
 
 export function RecentIssues() {
-  const recentIssues = MOCK_ISSUES
-    .filter((issue) => issue.status !== "RESOLVED" && issue.status !== "CLOSED")
-    .slice(0, 6);
+  const { data: dashboard } = useDashboardStats();
+  const recentIssues = dashboard.recentIssues;
 
   return (
     <Card>
