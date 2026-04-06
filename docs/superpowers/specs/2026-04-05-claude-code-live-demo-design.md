@@ -1,20 +1,20 @@
 # Claude Code 심화 기능 라이브 데모 발표 설계
 
-> 하네스 엔지니어링 프레임워크로 Skills, Sub-Agent, Hooks, /dev-cycle을 설명하고
-> 실제 Jira 티켓을 라이브로 구현하는 발표
+> 하네스 엔지니어링의 3단계 점층(프롬프트 → CLAUDE.md → 하네스)을 보여주고
+> 실제 Jira 티켓을 풀 하네스로 라이브 구현하는 발표
 
 ## 목차
 
 - [메타 정보](#메타-정보)
 - [참고 자료](#참고-자료)
-- [기존 인프라](#기존-인프라-claude-master-심볼릭-링크)
-- [핵심 프레임워크: 하네스 엔지니어링](#핵심-프레임워크-하네스-엔지니어링)
+- [기존 인프라](#기존-인프라)
+- [핵심 프레임워크](#핵심-프레임워크-하네스-엔지니어링)
 - [발표 구조](#발표-구조)
-  - [Part 1. 도입 — 하네스 엔지니어링이란 (4분)](#part-1-도입--하네스-엔지니어링이란-4분)
-  - [Part 2. 기둥 1 — Skill: 컨텍스트 파일 (4분)](#part-2-기둥-1--skill-컨텍스트-파일-4분)
-  - [Part 3. 기둥 2 — Hook: CI/CD 게이트 (4분)](#part-3-기둥-2--hook-cicd-게이트-4분)
-  - [Part 4. 기둥 3 — SubAgent: 도구 경계 (5분)](#part-4-기둥-3--subagent-도구-경계--역할-분리-5분)
-  - [Part 5. 기둥 4 — /dev-cycle: 피드백 루프 (11분)](#part-5-기둥-4--dev-cycle-피드백-루프--풀-파이프라인-라이브-11분)
+  - [Part 1. 도입 (4분)](#part-1-도입--하네스-엔지니어링이란-4분)
+  - [Part 2. CLAUDE.md + Skill (5분)](#part-2-claudemd--skill--guide-사전-제어-5분)
+  - [Part 3. Hook (4분)](#part-3-hook--sensor-자동-검증-4분)
+  - [Part 4. SubAgent (4분)](#part-4-subagent--역할-분리-4분)
+  - [Part 5. 풀 하네스 라이브 (10분)](#part-5-풀-하네스-라이브--lih-69-구현-10분)
   - [Part 6. 정리 (2분)](#part-6-정리-2분)
 - [시간 배분 요약](#시간-배분-요약)
 - [사전 준비 체크리스트](#사전-준비-체크리스트)
@@ -23,8 +23,8 @@
 
 ## 메타 정보
 
-- **발표 시간**: 약 30분
-- **형식**: 하네스 엔지니어링 프레임워크 + Before/After 비교 + 풀 파이프라인 라이브 데모
+- **발표 시간**: 약 29분 (+ 1분 버퍼)
+- **형식**: 3단계 점층 + Before/After 비교 + 풀 하네스 라이브 데모
 - **비중**: Claude Code 기능 설명 50% + 실제 개발 50%
 - **라이브 데모 티켓**: LIH-69 (프로젝트 목록 UI)
 - **라이브 데모 범위**: 프로젝트 목록 페이지 — 확실하게 완성
@@ -33,76 +33,43 @@
 
 ## 참고 자료
 
-- 영상: [메타 엔지니어의 클로드코드 완벽 가이드 [심화편]](https://www.youtube.com/watch?v=8H3NwQL-Aew) by 실밸개발자
-- 치트시트: [Claude Code 고급 자동화 & 확장](https://raspy-roll-970.notion.site/Claude-Code-329f7725c9d98117bf53db9ad424f72d)
+- Martin Fowler: [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html) — "Agent = Model + Harness"
 - 하네스 엔지니어링: [AI 에이전트를 진짜로 통제하는 기술](https://raspy-roll-970.notion.site/AI-333f7725c9d98147957afad16db3b655)
-- Martin Fowler: [Harness engineering for coding agent users](https://martinfowler.com/articles/harness-engineering.html) — "Agent = Model + Harness" 정의
+- 영상: [메타 엔지니어의 클로드코드 완벽 가이드 [심화편]](https://www.youtube.com/watch?v=8H3NwQL-Aew)
+- 치트시트: [Claude Code 고급 자동화 & 확장](https://raspy-roll-970.notion.site/Claude-Code-329f7725c9d98117bf53db9ad424f72d)
 - 공식 문서: [Skills](https://code.claude.com/docs/ko/skills) / [Sub-Agents](https://code.claude.com/docs/ko/sub-agents) / [Hooks](https://code.claude.com/docs/ko/hooks)
+- AI 규칙 위반: [AI Agent Forgets Its Rules Every 45 Minutes](https://dev.to/douglasrw/your-ai-agent-forgets-its-rules-every-45-minutes-heres-the-fix-151e)
 
-## 기존 인프라 (claude-master 심볼릭 링크)
+## 기존 인프라
 
-이미 구축되어 있는 것들 — 발표에서 활용:
+`.claude/` → claude-master 심볼릭 링크로 이미 구축됨:
 
-```
-.claude/ → /Users/imdoyeong/workSpaces/claude-master/
-├── agents/                    # 20개 에이전트
-│   ├── code-reviewer.md       # 시니어 코드 리뷰어
-│   ├── debugger.md            # 디버깅 전문가
-│   ├── test-generator.md      # 테스트 자동 생성
-│   ├── expert-security.md     # 15년차 AppSec
-│   ├── expert-frontend-architect.md  # 12년차 FE 아키텍트
-│   ├── expert-ui-ux-designer.md     # 15년차 UX
-│   └── ... (15개 전문가 패널)
-├── skills/
-│   ├── expert-panel/          # 전문가 패널 병렬 리뷰
-│   ├── tdd-workflow/          # TDD 사이클
-│   ├── quality-gate/          # 품질 게이트
-│   └── ...
-├── commands/
-│   ├── dev-cycle.md           # 3단계 개발 파이프라인
-│   └── jira/                  # Jira 커맨드 모음
-│       ├── start.md           # 티켓 시작 + 브랜치 생성
-│       ├── commit.md          # 커밋 + Jira 업데이트
-│       ├── complete.md        # PR 생성 + 완료 처리
-│       ├── create.md          # 티켓 생성
-│       └── test.md            # 통합 테스트
-└── settings.json              # Hook 설정
-```
+| 카테고리 | 내용 |
+|----------|------|
+| **agents/** (20개) | code-reviewer, debugger, test-generator + expert-* 15명 패널 |
+| **skills/** | expert-panel (병렬 리뷰), tdd-workflow, quality-gate 등 |
+| **commands/** | dev-cycle (3단계 파이프라인), jira/ (start, commit, complete, create, test) |
+| **settings.json** | Prettier Hook 등 |
 
 ---
 
 ## 핵심 프레임워크: 하네스 엔지니어링
 
 > **Agent = Model + Harness** (Martin Fowler)
-> 하네스 = 모델을 제외한 모든 것. 특정 도구 하나가 아니라 **Guide + Sensor의 전체 시스템**.
+> 하네스 = 모델을 제외한 모든 것. Guide(사전 제어) + Sensor(사후 교정)의 전체 시스템.
 
-### 하네스의 2축
-
-| 축 | 역할 | 타이밍 |
-|---|------|--------|
-| **Guide (피드포워드)** | AI가 행동하기 **전에** 방향을 잡아줌 | 사전 제어 |
-| **Sensor (피드백)** | AI가 행동한 **후에** 자가 수정 | 사후 교정 |
-
-### 4기둥 — Guide와 Sensor의 구성요소
-
-발표 전체를 관통하는 뼈대. 4기둥 전부가 하네스의 구성요소이며, 이것들을 엮은 전체가 마구(harness):
-
-| 하네스 기둥 | 축 | Claude Code 구현 | 발표 파트 |
-|------------|-----|-----------------|----------|
-| **기둥 1: 컨텍스트 파일** | Guide | CLAUDE.md + Skills | Part 2 |
-| **기둥 2: CI/CD 게이트** | Sensor | Hooks (100% 실행 보장) | Part 3 |
-| **기둥 3: 도구 경계** | Guide + Sensor | SubAgent + Expert Panel | Part 4 |
-| **기둥 4: 피드백 루프** | Sensor | /dev-cycle (계획→실행→검증→수정) | Part 5 |
+### 3단계 점층 — 발표의 뼈대
 
 ```
-하네스 = Guide(사전 제어) + Sensor(사후 교정)의 전체 시스템
-
-  Guide (실행 전):  CLAUDE.md, Skill, SubAgent 역할 정의
-  Sensor (실행 후): Hook, 테스트, @code-reviewer, /dev-cycle 루프
+1단계: 프롬프트만        → AI가 자기 판단으로 만듦. 매번 다름.
+2단계: + CLAUDE.md       → 규칙은 따르지만, 절차는 즉흥적. 가끔 어김.
+3단계: + 하네스 (풀셋)   → 시스템이 절차를 강제. 사람이 아니라 시스템이 품질 보장.
+         ├── Skill      → Guide: 절차를 코드화
+         ├── Hook       → Sensor: 자동 검증 (100% 강제)
+         └── SubAgent   → 역할 분리: 쓰는 AI ≠ 검토하는 AI
 ```
 
-> "말을 아무리 잘 훈련시켜도, 마구 없이는 밭을 갈 수 없습니다."
-> 마구는 부품 하나가 아닙니다. 가죽끈, 고삐, 안장을 엮은 **전체 시스템**이 마구입니다.
+> "되돌릴 수 있으면 프롬프트로 충분합니다. 되돌릴 수 없으면 하네스가 필요합니다."
 
 ---
 
@@ -110,204 +77,180 @@
 
 ### Part 1. 도입 — 하네스 엔지니어링이란 (4분)
 
-**목표**: 프로젝트 소개 + 하네스 프레임워크로 발표 전체 로드맵 제시
+**목표**: 프로젝트 소개 + 3단계 계단을 명시적으로 제시
 
-**액션**:
-
-1. IssueHub 소개 (30초)
+1. **IssueHub 소개** (30초)
    - "AI 코드 분석 기반 이슈 관리 플랫폼"
-   - 브라우저에서 대시보드, 이슈 목록 간단히 보여주기
+   - 브라우저에서 대시보드 간단히 보여주기
 
-2. 하네스 엔지니어링 프레임워크 소개 (2분)
+2. **하네스 프레임���크** (2분)
 
    > "AI 에이전트를 거대한 짐말이라고 생각해보세요.
-   > 아무리 힘이 세도 마구 없이는 밭을 갈 수 없습니다.
-   > 오늘 보여드릴 것은 이 마구의 부품들입니다."
-
-   AI 활용 4가지 축 소개:
+   > 아무리 힘이 세도 마구 없이는 밭을 갈 수 없습니다."
 
    | 축 | 핵심 | 비유 |
    |---|------|------|
    | Prompt Engineering | AI에게 말을 잘 거는 기술 | 주문을 정확하게 하기 |
    | Context Engineering | 필요한 정보를 적절히 제공 | 재료를 잘 골라주기 |
    | **Harness Engineering** | AI가 실수할 수 없는 환경 | **말에게 마구를 씌우기** |
-   | Agentic Engineering | AI 에이전트를 설계/조율 | 말을 교배하고 훈련시키기 |
 
    > "되돌릴 수 있으면 프롬프트로 충분합니다. 되돌릴 수 없으면 하네스가 필요합니다."
-   >
    > - DB: DROP TABLE 한 번이면 복구 불가
    > - 코드 가이드라인: 아키텍처 위반이 쌓이면 기술 부채가 복리로 증가
    > - 보안: API 키 노출은 한 번이면 사고
-   >
-   > "프롬프트는 부탁입니다. 하네스는 강제입니다.
-   > 오늘은 이 마구를 Claude Code에서 어떻게 만드는지 보여드리겠습니다."
 
-3. 발표 로드맵 (30초)
-   > "4가지 기둥을 하나씩 Before/After로 보여드리고,
-   > 마지막에 실제 Jira 티켓을 이것들로 처음부터 끝까지 구현하겠습니다."
+3. **3단계 계단 — 오늘의 로드맵** (1분)
 
-4. CLAUDE.md 간단히 보여주기 (30초)
-   - "이것이 첫 번째 마구입니다. AI가 읽는 런타임 설정 파일"
+   > "오늘은 3단계로 마구를 한 겹씩 씌워가겠습니다."
+
+   ```
+   1단계: 프롬프트만         → Part 2 Before
+   2단계: + CLAUDE.md + Skill → Part 2 After
+   3단계: + Hook + SubAgent   → Part 3, 4
+   풀 ��네스: 전부 조합       → Part 5 라이브
+   ```
+
+4. **CLAUDE.md 보여주기** (30초)
+   - "이것이 첫 ��째 마구입니다. AI가 읽는 런타임 설정 파일"
 
 ---
 
-### Part 2. 기둥 1 — Skill: 컨텍스트 파일 (5분)
+### Part 2. CLAUDE.md + Skill — Guide(사전 제어) (5분)
 
-**하네스 기둥**: AI에게 주는 업무 매뉴얼. 프롬프트는 한 번의 부탁, Skill은 재사용 가능한 시스템.
+**3단계 위치**: 1단계(프롬프���만) → **2단계(+CLAUDE.md+Skill)**
 
-#### 사전 준비: 워크트리 4개 비교 (발표 전에 미리 실행)
+#### Before — 프롬프트만 (1분30초)
 
-같은 작업("프로젝트 목록 페이지 만들기")을 4가지 방식으로 실행해서 결과를 비교:
+> "프롬프트만으로 시키면 어떻게 되는지 보겠습니다."
 
-| 워크트리 | 방식 | 프롬프트 |
-|----------|------|---------|
-| **WT 1** | 프롬프트 (짧음) | "프로젝트 목록 페이지 만들어줘" |
-| **WT 2** | 프롬프트 (상세) | 8줄짜리 긴 프롬프트 |
-| **WT 3** | 나쁜 Skill | 절차만 있고 패턴 참고/검증 없는 Skill |
-| **WT 4** | 좋은 Skill | Jira + 패턴 참고 + 자체 검증까지 있는 Skill |
-
-> **💬 WT 1 프롬프트** (짧고 애매):
+> **💬 프롬프트**:
 > ```
 > 프로젝트 목록 페이지 만들어줘
 > ```
 
-> **💬 WT 2 프롬프트** (상세하지만 매번 타이핑):
-> ```
-> IssueHub 프로젝트에 프로젝트 목록 페이지를 만들어줘.
-> - frontend/src/features/projects/ 디렉토리에 만들어
-> - 기존 features/issues/components/issue-listing.tsx 패턴을 따라해
-> - DataTable 컴포넌트 재사용하고, columns.tsx는 팩토리 함수로
-> - 훅은 features/projects/hooks/use-projects.ts로 분리
-> - Mock 데이터는 constants/mock-data.ts의 MOCK_PROJECTS 사용
-> - app/(dashboard)/projects/page.tsx 진입점도 만들어줘
-> - 파일명은 kebab-case, 컴포넌트는 PascalCase로
-> ```
+실행 잠깐 보여주고 멈춤 (Ctrl+C). 결과를 짚기:
 
-> **💬 WT 3 — 나쁜 Skill** (`/jira-implement-basic LIH-69`):
-> ```yaml
-> # .claude/skills/jira-implement-basic/SKILL.md
-> ---
-> name: jira-implement-basic
-> description: "Jira 티켓을 구현합니다"
-> disable-model-invocation: true
-> argument-hint: "[LIH-번호]"
-> ---
-> 
-> ## 절차
-> 1. Jira MCP로 $ARGUMENTS 티켓 상세 조회
-> 2. 티켓 요구사항에 맞게 구현
-> 3. 커밋
-> ```
+→ **"Jira 안 봤죠? 기존 패턴 참고 안 했죠? 검증도 없죠?"**
+→ **"프롬프트는 한 번의 부탁입니다. 매번 다른 결과가 나옵니다."**
 
-> **💬 WT 4 — 좋은 Skill** (`LIH-69 티켓 구현해줘` 자연어 트리거 or `/jira-implement LIH-69`):
-> ```yaml
-> # .claude/skills/jira-implement/SKILL.md
-> ---
-> name: jira-implement
-> description: "Jira 티켓 번호를 받아 이슈 상세를 읽고 구현을 시작합니다.
->   '티켓 구현', 'Jira 이슈 작업' 요청 시 트리거."
-> disable-model-invocation: true
-> argument-hint: "[LIH-번호]"
-> ---
-> 
-> ## 목적
-> Jira 티켓의 요구사항을 읽고, CLAUDE.md 규칙에 따라 코드를 구현합니다.
-> 
-> ## 절차
-> 1. Jira MCP로 $ARGUMENTS 티켓 상세 조회
-> 2. 티켓 제목과 설명에서 구현 요구사항 추출
-> 3. `feat/$ARGUMENTS-{짧은설명}` 브랜치 생성 (이미 있으면 스킵)
-> 4. CLAUDE.md의 Frontend Rules에 따라 구현:
->    - `app/(dashboard)/{기능}/page.tsx`: 라우팅 진입점만 (반드시 생성)
->    - `features/{기능}/components/`: 비즈니스 컴포넌트
->    - `features/{기능}/hooks/`: 커스텀 훅 (kebab-case 파일명)
-> 5. 기존 패턴 참고:
->    - `features/issues/components/issue-listing.tsx` → 조합 컴포넌트 구조
->    - `features/issues/hooks/use-issues.ts` → 훅 추상화 패턴
->    - `features/issues/components/issue-tables/columns.tsx` → ColumnDef 팩토리
->    - `constants/mock-data.ts`의 기존 Mock 데이터 활용
-> 6. 커밋 메시지: `feat(frontend): {설명} [$ARGUMENTS]`
-> 
-> ## 자체 검증
-> - [ ] CLAUDE.md 네이밍 컨벤션 준수 (kebab-case 파일, PascalCase 컴포넌트)
-> - [ ] features/ 디렉토리 구조 올바른지 (components/, hooks/)
-> - [ ] app/(dashboard)/{기능}/page.tsx 진입점 생성됐는지
-> - [ ] 기존 DataTable, Badge 등 shadcn/ui 컴포넌트 재사용
+> 주의: 사전에 같은 프롬프트로 실행한 결과 스크린샷을 준비해둘 것.
+> (예: 카드 그리드로 만든 결과 vs DataTable로 만든 결과 — 매번 다름을 보여줌)
+
+#### After — CLAUDE.md + Skill (3분30초)
+
+1. **이미 축적된 Skill 라이브러리 보여주기** (1분30초):
+   - `.claude/commands/jira/` 디렉토리 ���기 → start, commit, complete, create, test
+   - `.claude/commands/dev-cycle.md` 열기 → "3단계 풀 파이프라인이 파일 하나에"
+   - "이것들은 팀에서 축적된 Skill입니다. 새 팀원이 와도 같은 절차를 밟습니다."
+
+2. **Skill 파일 구조 설명** (1분):
+   - `dev-cycle.md` 핵심 3줄만 짚기:
+     - `$ARGUMENTS` → "티켓 번호가 여기 들어갑니다"
+     - Jira 조회 → 설계 → TDD → 리뷰 �� PR → "이 절차가 코드화되어 있습니다"
+     - `@code-reviewer`, `@debugger` → "SubAgent도 절차 안에 포함"
+
+3. **Skill 확장 데모** (1분):
+   - "새 Skill을 만들어보겠습니다" → jira-implement SKILL.md 스니펫 붙여넣기
+   - 핵심 차이점: 기존 패턴 참고 경로 + 자체 검증 체크리스트
+   - "이 Skill이 있으면 자연어로 'LIH-69 구현해줘'만 해도 절차가 강제됩니다"
+
+> **💬 After 프롬프트** (Part 5에서 실행):
+> ```
+> LIH-69 티켓 구현해줘
 > ```
 
-#### 발표 시 흐름 (5분)
+**Skill 파일 내용** (스니펫으로 붙여넣기):
 
-1. **워크트리 4개 결과 비교** (3분):
+```yaml
+---
+name: jira-implement
+description: "Jira 티켓 번호를 받아 이슈 상세를 읽고 구현을 시작합니다.
+  '티켓 구현', 'Jira 이슈 작업' 요청 시 트리거."
+disable-model-invocation: true
+argument-hint: "[LIH-번호]"
+---
 
-   > "같은 작업을 4가지 방식으로 시켰습니다. 결과를 비교해보겠습니다."
+## 목적
+Jira 티켓의 요구사항을 읽고, CLAUDE.md 규칙에 따라 코드를 구현합니다.
 
-   | | WT 1 (짧은 프롬프트) | WT 2 (상세 프롬프트) | WT 3 (나쁜 Skill) | WT 4 (좋은 Skill) |
-   |---|---|---|---|---|
-   | 디렉토리 구조 | ❌ 제각각 | ✅ 지정대로 | ⚠️ 들쭉날쭉 | ✅ 패턴 준수 |
-   | 기존 패턴 참고 | ❌ | ✅ (명시했으니) | ❌ | ✅ 자동 |
-   | Jira 조회 | ❌ | ❌ | ✅ | ✅ |
-   | 자체 검증 | ❌ | ❌ | ❌ | ✅ |
-   | 매번 타이핑 | 1줄 | **8줄** | 1줄 | **1줄 (자연어도 OK)** |
+## 절차
+1. Jira MCP로 $ARGUMENTS 티켓 상세 조회
+2. 티켓 제목과 설명에서 구현 요구사항 추출
+3. `feat/$ARGUMENTS-{짧은설명}` 브랜치 생성 (이미 있으면 스킵)
+4. CLAUDE.md의 Frontend Rules에 따라 구현:
+   - `app/(dashboard)/{기능}/page.tsx`: 라우팅 진입점만 (반드시 생성)
+   - `features/{기능}/components/`: 비즈니스 컴포넌트
+   - `features/{기능}/hooks/`: 커스텀 훅 (kebab-case 파일명)
+5. 기존 패턴 참고:
+   - `features/issues/components/issue-listing.tsx` → 조합 컴포넌트 구조
+   - `features/issues/hooks/use-issues.ts` → 훅 추상화 패턴
+   - `features/issues/components/issue-tables/columns.tsx` → ColumnDef 팩토리
+   - `constants/mock-data.ts`의 기존 Mock 데이터 활용
+6. 커밋 메시지: `feat(frontend): {설명} [$ARGUMENTS]`
 
-   → **"WT 2는 결과가 괜찮지만 매번 8줄을 쳐야 합니다."**
-   → **"WT 3은 Skill이지만 절차가 부실해서 결과가 들쭉날쭉입니다."**
-   → **"WT 4는 자연어 한 줄인데 Jira 조회, 패턴 참고, 검증까지 자동입니다."**
-   → **"Skill도 잘 만들어야 합니다. 하네스의 품질이 결과의 품질을 결정합니다."**
-
-2. **좋은 Skill 파일 핵심 설명** (2분):
-   - WT 4의 SKILL.md를 화면에 띄우고 핵심 3줄 짚기:
-     - `description` → "이 설명으로 자연어 자동 트리거"
-     - `기존 패턴 참고` 섹션 → "구체적 파일 경로가 있어야 품질이 올라감"
-     - `자체 검증` 체크리스트 → "이게 나쁜 Skill과의 차이"
+## 자체 검증
+- [ ] CLAUDE.md 네이밍 컨벤션 준수 (kebab-case 파일, PascalCase 컴포넌트)
+- [ ] features/ 디렉토리 구조 올바른지 (components/, hooks/)
+- [ ] app/(dashboard)/{기능}/page.tsx 진입점 생성됐는지
+- [ ] 기존 DataTable, Badge 등 shadcn/ui 컴포넌트 재사용
+```
 
 ---
 
-### Part 3. 기둥 2 — Hook: CI/CD 게이트 (4분)
+### Part 2→3 브릿지 — CLAUDE.md에 규칙을 적어도 AI가 어기는 이유
 
-**하네스 기둥**: 프롬프트는 부탁이고, Hook은 물리적 차단. 100% 실행 보장.
+> "CLAUDE.md와 Skill로 Guide를 만들었습니다. 근데 이것만으로 충분할까요?"
+
+| 이유 | 설명 |
+|------|------|
+| **확률적 제안일 뿐** | "하지 마"라고 써도 확률이 낮아지는 것일 뿐, 0% 보장 안 됨 |
+| **컨텍스트 압축** | 대화가 길어지면 CLAUDE.md 내용이 압축되면서 규칙이 사라짐 |
+| **Lost in the Middle** | LLM은 프롬프트 처음/끝은 기억하지만 중간은 잊음 |
+| **토큰 예산 초과** | 시스템 프롬프트 + 대화 히스토리가 쌓이면 규칙이 밀려남 |
+
+> "AI가 45분마다 규칙을 잊는다는 연구 결과도 있습니다.
+> CLAUDE.md는 교범입니다. 읽지만 100% 따르진 않습니다.
+> **그래서 Sensor가 필요합니다. 시스템이 강제하는 검증 — Hook입니다.**"
+
+---
+
+### Part 3. Hook — Sensor(자동 검증) (4분)
+
+**3단계 위치**: 2단계(CLAUDE.md+Skill) → **3단계 시작(+Hook)**
 
 #### Before (1분)
 
-실제 시연으로 보여주기:
-
-> **주의**: settings.json에 Prettier Hook이 이미 있으므로 포맷팅은 잡힘.
-> Before의 포인트는 "Prettier는 있지만 ESLint는 없다" — 코드 품질 이슈는 못 잡는 것을 보여줌.
-
-1. Claude Code에 요청:
-   ```
-   frontend/src/features/projects/components/hello.tsx에 간단한 컴포넌트 하나 만들어줘. any 타입 써도 되고, 미사용 import 있어도 괜찮아
-   ```
-2. 파일이 생성됨 — Prettier가 포맷은 잡지만 **`any` 타입, 미사용 import, 규칙 위반은 그대로**
-3. 화면에 보여주며:
-   → **"포맷팅은 잡혔지만, 코드 품질 문제는 여전합니다. `any` 타입, 미사용 import... ESLint 없이는 못 잡습니다."**
-   → **"하네스의 두 번째 기둥은 '규칙을 시스템이 강제하는 것'입니다. Hook이 바로 그겁니다."**
-
-> **💬 Before 프롬프트**:
+> **💬 프롬프트**:
 > ```
 > frontend/src/features/projects/components/hello.tsx에 간단한 컴포넌트 하나 만들어줘. any 타입 써도 되고 미사용 import 있어도 괜찮아
 > ```
 
-#### After (3분)
+> **주의**: settings.json에 Prettier Hook이 이미 있어서 포맷팅은 잡힘.
+> Before의 포인트는 "Prettier는 잡지만 ESLint 없이는 `any`, 미사용 import 등 코드 품질 이슈를 못 잡는다"는 것.
 
-> **💬 After 프롬프트** (Hook 추가 후 같은 요청):
-> ```
-> hello.tsx 다시 만들어줘
-> ```
-> → 이번에는 자동으로 ESLint가 돌아가는 것 확인
+→ **"포맷은 잡혔지만 코드 품질 문제는 그대로입니다."**
+→ **"프롬프트로 '린트 돌려줘'라고 해도 AI가 빼먹을 수 있습니다."**
+
+#### After (3분)
 
 1. **개념 설명** (30초):
    > "Hook은 이벤트가 발생하면 자동으로 셸 스크립트를 실행합니다.
-   > AI가 파일을 수정하면 자동 린트, 작업이 끝나면 자동 알림.
-   > 프롬프트와 달리 100% 실행이 보장됩니다."
+   > 프롬프트와 달리 **100% 실행이 보장**됩니다."
 
-2. **이미 있는 settings.json 보여주기** (30초):
-   - `.claude/settings.json` 열기 → 현재 Hook 설정 확인
+2. **라이브로 Hook 추가** (1��30초):
+   - `.claude/settings.json` 열기 → PostToolUse Hook + Notification Hook 추가
 
-3. **라이브로 Hook 추가** (2분):
-   - PostToolUse Hook — Edit/Write 후 자동 eslint
-   - Notification Hook — 작업 완료 시 macOS 알림 + 소리
+3. **같은 요청 다시 실행** (1분):
 
-**Hook 설정 내용** (라이브에서 추가):
+> **💬 프롬프트**:
+> ```
+> hello.tsx 다시 만들어줘
+> ```
+
+→ ESLint가 자동으로 돌아가는 것 확인
+→ **"AI가 기억하든 말든, 시스템이 강제합니다. 이게 Sensor입니다."**
+
+**Hook 설정 내용** (settings.json에 추가):
 
 ```json
 {
@@ -340,154 +283,111 @@
 
 ---
 
-### Part 4. 기둥 3 — SubAgent: 도구 경계 + 역할 분리 (5분)
+### Part 4. SubAgent — 역할 분리 (4분)
 
-**하네스 기둥**: 쓰는 AI와 검토하는 AI를 분리. 같은 사람이 쓰고 검토하면 실수를 못 잡듯이, AI도 역할을 나눠야 품질이 올라감.
+**3단계 위치**: 3단계 계속(+SubAgent) — 쓰는 AI ≠ 검토하는 AI
 
 #### Before (1분)
 
-실제 시연으로 보여주기:
-
-1. Claude Code 메인 대화에서 직접 요청:
-   ```
-   방금 만든 hello.tsx 코드 리뷰해줘. 보안, 성능, 가독성 다 체크하고...
-   ```
-2. 리뷰 결과가 메인 대화에 수십 줄 쌓이는 것을 보여줌
-3. 화면에 보여주며:
-   → **"리뷰 결과가 메인 대화에 쌓입니다. 세션이 길어질수록 AI가 느려지는 이유 — 컨텍스트 오염입니다."**
-   → **"같은 사람이 쓰고 검토하면 실수를 못 잡듯이, AI도 역할을 나눠야 합니다."**
-
-> **💬 Before 프롬프트**:
+> **💬 프롬프트**:
 > ```
 > 방금 만든 hello.tsx 코드 리뷰해줘. 보안, 성능, 가독성 다 체크하고
 > ```
 
-#### After (4분)
+→ 리뷰 결과가 메인 대화에 수십 줄 쌓이는 것을 보여줌
+→ **"리뷰가 메인 대화에 쌓입니다. 세션이 길어지면 AI가 느려짐 — 컨텍스트 ��염."**
+→ **"같은 사람이 쓰고 검토하면 실수를 못 잡듯이, AI도 역할을 나눠야 합니다."**
 
-> **💬 After 프롬프트**:
+#### After (3분)
+
+1. **개념 설명** (30초):
+   > "SubAgent는 독립 공간에서 일하는 전문 도우미입니다.
+   > 결과는 요약만 메인으로 돌아옵니다."
+
+2. **이미 만든 에이전트 보여주기** (1분):
+   - `.claude/agents/` 열기 → 20개 파일 목록
+   - `code-reviewer.md` 구조 설명 (name, description, tools, model)
+   - Expert Panel 5개 패널 간단히 소개
+
+3. **실행 데모** (1분30초):
+
+> **💬 프롬프트**:
 > ```
 > @code-reviewer hello.tsx 리뷰해줘
 > ```
 
-1. **개념 설명** (30초):
-   > "Sub-Agent는 독립 공간에서 일하는 전문 도우미입니다.
-   > 결과는 요약만 메인으로 돌아옵니다.
-   > 여러 전문가를 동시에 병렬로 띄울 수도 있습니다."
-
-2. **이미 만든 에이전트 20개 보여주기** (1분):
-   - `.claude/agents/` 디렉토리 열기 → 20개 파일 목록
-   - `code-reviewer.md` 열어서 구조 설명 (name, description, tools, model + 시스템 프롬프트)
-   - "코드 리뷰어, 디버거, 테스트 생성기, 그리고 15명의 전문가 패널"
-
-3. **Expert Panel 보여주기** (1분30초):
-   - `.claude/skills/expert-panel/SKILL.md` 열기
-   - "주제를 입력하면 자동으로 적합한 전문가 3-5명을 선정해서 병렬 리뷰"
-
-   ```
-   /expert-panel "프로젝트 목록 페이지 리뷰"
-   → 프론트엔드 아키텍트 + UX 디자이너 + 접근성 전문가가 동시에 리뷰
-   → 통합 리포트: Critical / Warning / Good / Trend Insights
-   ```
-
-   - 5개 패널 구성 보여주기:
-
-   | 패널 | 전문가 |
-   |------|--------|
-   | ui | UX 디자이너, 비주얼 디자이너, IA 전문가 |
-   | frontend | FE 아키텍트, 성능 전문가, 접근성 전문가 |
-   | backend | BE 아키텍트, 보안 전문가, DB 성능 |
-   | infra | DevOps, 클라우드 아키텍트, SRE |
-   | business | 전략, 마케팅, PM |
-
-4. **기존 에이전트 실행 데모** (1분):
-   - `@code-reviewer hello.tsx 리뷰해줘` 실행
-   - 별도 컨텍스트에서 실행되는 것 확인 → 메인에는 요약만 돌아옴
-   - "Before에서 메인 대화가 오염됐던 것과 비교해보세요"
+→ 별도 컨텍스트에서 실행 → 메인에는 요약만
+→ **"Before에서 메인 대화가 오염됐던 것과 비교해보세요."**
+→ **"이제 마구가 3겹입니다 — CLAUDE.md(규칙) + Hook(검증) + SubAgent(분리)."**
 
 ---
 
-### Part 5. 기둥 4 — /dev-cycle: 피드백 루프 + 풀 파이프라인 라이브 (11분)
+### Part 5. 풀 하네스 라이브 — LIH-69 구현 (10분)
 
-**하네스 기둥**: 계획 → 실행 → 검증 → 수정 루프. 테스트를 통과하기 전까지 AI는 이 루프를 빠져나갈 수 없음.
+**3단계 위치**: 풀 하네스 = CLAUDE.md + Skill + Hook + SubAgent 전부 조합
 
-> **전환 멘트**: "지금까지 Guide와 Sensor 요소들을 개별로 보여드렸습니다.
-> 마지막 기둥은 이것들을 하나의 루프로 엮는 피드백 루프입니다.
-> AI가 코드를 작성하면 자동으로 테스트를 돌리고, 실패하면 에러를 AI에게 다시 던져서 수정하게 합니다.
-> 이걸 `/dev-cycle`이라는 3단계 파이프라인으로 만들어뒀습니다."
+> **전환 멘트**:
+> "지금까지 Guide와 Sensor를 한 겹씩 쌓았습니다.
+> 이제 전부 조합해서 실제 Jira 티켓을 구현하겠습니다."
 
-#### Step 1. /dev-cycle 구조 설명 (2분)
+#### Step 1. dev-cycle 구조 설명 (1분30초)
 
-`.claude/commands/dev-cycle.md` 열어서 3단계 보여주기:
+`.claude/commands/dev-cycle.md` 열어서 보여주기:
 
 ```
-/dev-cycle LIH-69
+/dev-cycle LIH-69 → 이것이 풀 하네스
 
-1단계: 준비 + 설계
-  ├── Jira 티켓 시작 (상태 "진행 중", 브랜치 생성)
-  ├── AC(수락 조건) 추출
-  └── 아키텍처 설계 → 사용자 확인
-
-2단계: TDD 구현
-  ├── Red: 실패하는 테스트 작성
-  ├── Green: 최소 코드로 통과
-  ├── Refactor: 구조 개선
-  └── 레이어별 반복 → 사용자 확인
-
-3단계: 검증 + 완료
-  ├── @code-reviewer 코드 리뷰
-  ├── Critical 이슈 → @debugger 자동 수정
-  ├── 최종 테스트 통과 확인
-  └── PR 생성 + Jira 완료 처리
+1단계: Jira 시작 + 아키텍처 설계    (Skill + SubAgent)
+2단계: TDD 구현                     (CLAUDE.md 규칙 적용)
+3단���: 검증 + 완료                  (SubAgent 리뷰 + Hook 자동 검증)
 ```
 
-→ **"각 단계에서 사용자 확인을 받고, 검증 실패하면 자동으로 수정 루프에 들어갑니다. 하네스의 심장부입니다."**
+→ **"dev-cycle이 절차를 강제하고, Hook이 품질을 강제합니다. 이 조합이 풀 하네스."**
 
-#### Step 2. 라이브 실행 — LIH-69 (9분)
+#### Step 2. 라이브 실행 (8분30초)
 
-> "시간 관계상 오늘은 프론트엔드 UI만 구현하겠습니다.
-> `/dev-cycle` 대신 `/jira-implement`로 코드 생성에 집중합니다."
+> "시간 관계상 `/dev-cycle` 대신 `/jira-implement`로 코드 생성에 집중합니다."
 
-**2-1. Jira 티켓 확인 (1분)**
-- Jira에서 LIH-69 보여주기
+**2-1. Jira 티켓 확인 (30초)**
+- Jira에서 LIH-69 보여���기
 - 현재 `/projects` 라우트 없음 확인
 
 **2-2. Skill 실행 — 코드 생성 (3분)**
 
 > **💬 프롬프트**:
 > ```
-> /jira-implement LIH-69
+> LIH-69 티켓 구현해줘
 > ```
 
-- Jira MCP 티켓 조회 → 브랜치 생성 → 코드 생성
-- 생성 중 설명:
-  - "CLAUDE.md의 features/ 구조 자동 준수"
-  - "기존 issue-listing 패턴 참고"
-  - "파일명 kebab-case, 컴포넌트 PascalCase"
+→ jira-implement Skill 자동 트리거 → Jira MCP 조회 → 브랜치 생성 → 코드 생성
+→ 생성 중 설명: "CLAUDE.md 규칙 자동 준수, 기존 패턴 참고"
 
-**2-3. Hook 동작 확인 (자동)**
-- 파일 생성될 때마다 자동 린트 돌아가는 것 확인
-- "아까 만든 Hook이 작동합니다"
+**2-3. Hook 자동 동작 확인 (자동)**
+→ 파일 생성될 때마다 ESLint 자동 실행
+→ **"아까 만든 Hook이 작동합니다"**
 
-**2-4. SubAgent 리뷰 (3분)**
+**2-4. 피드백 루프 시연 (2분)**
+→ 코드에 에러/린트 오류가 있으면:
+  - Hook이 잡음 → Claude가 자동 수정 → 다시 Hook → 통과
+  - **"이것이 피드백 루프입니다. 실패 → 수정 → 검증이 자동으로 돌아갑니다."**
+→ 에러가 없으면:
+  - **"Hook이 통과시켰다는 건 품질이 보장됐다는 뜻입니다"**
 
-코드 생성 완료 후:
+**2-5. SubAgent 리뷰 (2분)**
 
 > **💬 프롬프트**:
 > ```
 > @code-reviewer 방금 생성된 프로젝트 목록 코드를 리뷰해줘
 > ```
 
-- 별도 컨텍스트에서 실행 → 요약만 메인으로
-- 시간 여유 있으면:
+→ 별도 컨텍스트에서 리뷰 → 요약만 메인으로
 
-> **💬 보너스 프롬프트**:
+> **💬 보너스 프롬프트** (시간 여유 있으면):
 > ```
 > /expert-panel --panels "frontend" "프로젝트 목록 페이지"
 > ```
 
-→ FE 아키텍트 + 성능 전문가 + 접근성 전문가 3명 병렬 리뷰
-
-**2-5. 결과 확인 (2분)**
+**2-6. 결과 확인 (1분)**
 - 브라우저에서 `/projects` 접속
 - 프로젝트 목록 테이블 렌더링 확인
 - Notification Hook → macOS 알림
@@ -496,13 +396,21 @@
 
 ### Part 6. 정리 (2분)
 
+**3단계 회고**:
+
+```
+1단계: 프롬프트만     → 매번 다른 결과. 규칙 없음.
+2단계: +CLAUDE.md+Skill → 규칙과 절차가 생김. 하지만 AI가 어길 수 있음.
+3단계: +Hook+SubAgent  → 시스템이 강제. 어기면 자동으로 잡힘.
+```
+
 **하네스 = Guide + Sensor 전체 시스템**:
 
-| 마구 부품 | 축 | Claude Code | 핵심 |
-|----------|-----|-------------|------|
-| 컨텍스트 파일 | Guide | **CLAUDE.md + Skill** | 실행 전에 방향을 잡아줌 |
-| CI/CD 게이트 | Sensor | **Hook** | 실행 후 자동 검증 (100% 강제) |
-| 도구 경계 | Guide+Sensor | **SubAgent + Expert Panel** | 쓰는 AI와 검토하는 AI를 분리 |
+| 구성요소 | 축 | Claude Code | 핵심 |
+|---------|-----|-------------|------|
+| 컨텍스트 | Guide | **CLAUDE.md + Skill** | 실행 전에 방향을 잡아줌 |
+| 자동 검증 | Sensor | **Hook** | 실행 후 자동 검증 (100% 강제) |
+| 역할 분리 | Guide+Sensor | **SubAgent** | 쓰는 AI와 검토하는 AI를 분리 |
 | 피드백 루프 | Sensor | **/dev-cycle** | 검증 실패 → 자동 수정 루프 |
 
 **마무리 멘트**:
@@ -513,13 +421,7 @@
 >
 > 인간은 조종한다(steer). 에이전트는 실행한다(execute)."
 
-**CTA (다음 액션)** — QR코드 또는 링크 슬라이드:
-
-| 대상 | 다음 액션 |
-|------|----------|
-| 개발자 | claude-master 레포 포크해서 내 프로젝트에 적용 |
-| PM/비개발자 | 하네스 치트시트 읽고 팀 도입 검토 |
-| 모두 | 오늘 발표 자료 + 참고 링크 |
+**CTA (다음 액션)**:
 
 ```
 오늘부터 시작하는 3단계:
@@ -528,19 +430,26 @@
 3. SubAgent 하나 만들기 — 코드 리뷰어부터
 ```
 
+| 대상 | 다음 액션 |
+|------|----------|
+| 개발자 | claude-master 레포 포크해서 내 프로젝트에 적용 |
+| PM/비개발자 | 하네스 치트시트 읽고 팀 도입 검토 |
+| 모두 | 오늘 발표 자료 + 참고 링크 (QR코드) |
+
 ---
 
 ## 시간 배분 요약
 
 | 파트 | 내용 | 시간 |
 |------|------|------|
-| Part 1 | 도입 + 하네스 프레임워크 | 4분 |
-| Part 2 | 기둥 1: Skill 워크트리 4개 비교 | 5분 |
-| Part 3 | 기둥 2: Hook B/A | 4분 |
-| Part 4 | 기둥 3: SubAgent + Expert Panel B/A | 5분 |
-| Part 5 | 기둥 4: /dev-cycle 설명 + 라이브 실행 | 11분 |
-| Part 6 | 정리 | 2분 |
-| **합계** | | **31분** |
+| Part 1 | 도입 + 3단계 계단 제시 | 4분 |
+| Part 2 | CLAUDE.md + Skill (Guide) | 5분 |
+| 브릿지 | "AI가 규칙을 어기는 이유" | (Part 3 도입 30초에 포함) |
+| Part 3 | Hook (Sensor) | 4분 |
+| Part 4 | SubAgent (역할 분리) | 4분 |
+| Part 5 | 풀 하네스 라이브 | 10분 |
+| Part 6 | 정리 + CTA | 2분 |
+| **합계** | | **29분 (+1분 버퍼)** |
 
 ---
 
@@ -555,46 +464,39 @@
 - [ ] terminal-notifier 설치 확인 (`brew install terminal-notifier`)
 - [ ] 에디터 폰트 크기 발표용으로 키우기
 - [ ] claude-master 심볼릭 링크 정상 확인
-- [ ] `demo/LIH-69-fallback` 폴백 브랜치 사전 생성 완료 확인
+- [ ] `demo/LIH-69-fallback` 폴백 브랜치 사전 생성 완료
 - [ ] `scripts/demo-reset.sh` 실행하여 깨끗한 상태 확인
-- [ ] `useIssueDetail.ts` → `use-issue-detail.ts` rename 완료 확인
+- [ ] `useIssueDetail.ts` → `use-issue-detail.ts` rename 완료
+
+### 사전 캡처 (Part 2 Before용)
+
+- [ ] "프로젝트 목록 만들어줘" 프롬프트만으로 실행한 결과 스크린샷 2장
+  - 예: 한 번은 카드 그리드, 한 번은 DataTable → "매번 다름" 증거
 
 ### 라이브에서 만들 파일
 
-1. `.claude/skills/jira-implement/SKILL.md` — Part 2에서 생성
-2. `.claude/settings.json` Hook 추가 — Part 3에서 수정
-3. SubAgent 1개 — Part 4에서 `/agents`로 생성
+1. `.claude/skills/jira-implement/SKILL.md` — Part 2에서 스니펫 붙여넣기
+2. `.claude/settings.json` Hook 추가 — Part 3에서 라이브 수정
 
-### 보여줄 기존 파일 (열어두기)
+### 보여줄 기존 파일
 
-1. `CLAUDE.md` — Part 1에서 보여주기
-2. `.claude/commands/dev-cycle.md` — Part 5에서 구조 설명
-3. `.claude/commands/jira/start.md` — Part 2에서 Skill 예시
-4. `.claude/agents/code-reviewer.md` — Part 4에서 구조 설명
-5. `.claude/skills/expert-panel/SKILL.md` — Part 4에서 병렬 리뷰 설명
+1. `CLAUDE.md` — Part 1
+2. `.claude/commands/dev-cycle.md` — Part 2 + Part 5
+3. `.claude/commands/jira/start.md` — Part 2 (축적된 Skill 예시)
+4. `.claude/agents/code-reviewer.md` — Part 4
+5. `.claude/skills/expert-panel/SKILL.md` — Part 4 (시간 여유 시)
 
-### 라이브 데모 폴백 — 미리 생성된 결과 준비
-
-라이브 코드 생성이 **4분 초과** 시, 미리 준비된 브랜치로 즉시 전환:
+### 폴백
 
 ```bash
-# 발표 전: 폴백 브랜치 미리 준비
-git checkout -b demo/LIH-69-fallback
-# (사전에 프로젝트 목록 페이지를 완성해두고 커밋)
-git checkout main
-
-# 라이브 중 4분 초과 시:
+# 라이브 코드 생성 4분 초과 시:
 git checkout demo/LIH-69-fallback
 # "시간 관계상 미리 준비한 결과를 보여드리겠습니다"
 ```
 
-### 발표 전 리셋 스크립트
-
-발표 직전 또는 예행 연습 후 깨끗한 상태로 복구:
-
 ```bash
+# 리셋 스크립트 (예행 연습 후 복구):
 #!/bin/bash
-# scripts/demo-reset.sh
 git checkout main
 git branch -D feat/LIH-69-* 2>/dev/null
 rm -rf frontend/src/features/projects/ 2>/dev/null
@@ -602,37 +504,25 @@ rm -f frontend/src/app/\(dashboard\)/projects/page.tsx 2>/dev/null
 echo "✅ 데모 상태 리셋 완료"
 ```
 
-### 훅 네이밍 불일치 사전 정리
-
-발표 전 반드시 확인:
-- `features/issues/hooks/useIssueDetail.ts` → `use-issue-detail.ts`로 rename
-- 또는 CLAUDE.md 훅 네이밍 규칙을 kebab-case로 명시 통일
-- Claude가 혼동하지 않도록 일관성 확보
-
-### 리스크 대응
-
-| 리스크 | 대응 |
-|--------|------|
-| Skill 파일 작성 중 오타 | 이 문서의 내용을 참고하며 작성 |
-| 코드 생성이 오래 걸림 (>4분) | **4분 초과 시 폴백 브랜치(`demo/LIH-69-fallback`)로 즉시 전환** |
-| 생성된 코드에 에러 | "이게 바로 피드백 루프가 필요한 이유" → 하네스 기둥 4 연결 |
-| Hook이 동작 안 함 | settings.json 오타 확인. "라이브의 묘미" |
-| Expert Panel 시간 초과 | @code-reviewer 한 명만 실행하고 넘어감 |
-| 시간 초과 (28분 넘어감) | Part 5의 SubAgent 리뷰를 생략하고 바로 브라우저 확인 |
-| MCP 연결 끊김 | 아래 LIH-69 요약을 읽어주고 진행 |
-
-### MCP 장애 시 LIH-69 티켓 내용 (오프라인 폴백)
+### MCP 장애 시 LIH-69 오프라인 폴백
 
 ```
 티켓: LIH-69
 제목: 프로젝트 목록/생성/설정 UI + API 연동
-부모: LIH-36 (P2-2. 프로젝트 CRUD)
-상태: 해야 할 일
-우선순위: Medium
-
 핵심 요구사항:
 - /projects 라우트에 프로젝트 목록 페이지 생성
 - DataTable + 필터 툴바 (기존 issue-listing 패턴 참고)
 - features/projects/ 디렉토리 구조 생성
 - Mock 데이터 활용 (constants/mock-data.ts의 MOCK_PROJECTS)
 ```
+
+### 리스크 대응
+
+| 리스크 | 대응 |
+|--------|------|
+| Part 2 Before에서 CLAUDE.md 위반이 재현 안 됨 | 사전 캡처한 스크린샷 사용 |
+| 코드 생성이 오래 걸림 (>4분) | 폴백 브랜치로 즉시 전환 |
+| 생성된 코드에 에러 | "이것이 피드백 루프입니다" → 자동 수정 시연 |
+| Hook이 동작 안 함 | settings.json 확인. 사전 검증된 백업 파일로 교체 |
+| SubAgent 리뷰 시간 초과 | 생략하고 브라우저 결과 확인으로 점프 |
+| MCP 연결 끊김 | 위 오프라인 폴백 내용 읽어주고 진행 |
