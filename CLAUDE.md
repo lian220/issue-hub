@@ -24,7 +24,7 @@
 ## Key Decisions
 
 - LLM: Ollama default, Claude API fallback (ADR-004)
-- Automation: core-automation 직접 구현 (n8n 등 외부 도구 미사용)
+- Automation: core-automation 직접 구현 + n8n을 외부 연동 게이트웨이로 활용 (n8n은 이벤트 수신/발송만 담당, 판단 로직은 core-automation 내부)
 - Integration: Direct REST API (CRUD) + Spring AI + MCP (AI 기능)
 - Code Intelligence: IssueHub가 Git bare clone 직접 보유, 코딩은 OpenHands에 위임
 - Tech Stack: Spring Boot + Kotlin 유지, Python 불필요 (Phase 4+에서 재검토)
