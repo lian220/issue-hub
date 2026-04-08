@@ -6,12 +6,11 @@
 ## 목차
 
 - [Part 1. 도입](#part-1-도입--하네스-엔지니어링이란)
-- [Part 2. CLAUDE.md + Skill](#part-2-claudemd--skill--guide-사전-제어)
+- [Part 2. CLAUDE.md + Skill](#part-2-claudemd--skill--guide사전-제어)
 - [Part 3. SubAgent](#part-3-subagent--역할-분리)
-- [Part 4. Hook](#part-4-hook--sensor-자동-검증)
+- [Part 4. Hook](#part-4-hook--sensor자동-검증)
 - [Part 5. 풀 하네스 라이브](#part-5-풀-하네스-라이브--lih-69-구현)
 - [Part 6. 정리](#part-6-정리)
-- [사전 준비 체크리스트](#사전-준비-체크리스트)
 - [참고 자료](#참고-자료)
 
 ---
@@ -95,7 +94,7 @@
 3. **Skill 확장 데모**:
 
 > **💬 프롬프트**:
-> ```
+> ```text
 > Jira 티켓 번호를 받아서 구현하는 스킬을 만들어줘.
 > 티켓 조회하고, 브랜치 만들고, CLAUDE.md 규칙대로 코드 작성하고,
 > 기존 issues 패턴 참고해서 만들어.

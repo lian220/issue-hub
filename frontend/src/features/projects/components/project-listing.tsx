@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryState, parseAsString } from "nuqs";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -12,12 +13,22 @@ import type { Project } from "@/constants/mock-data";
 
 export function ProjectListing() {
   const router = useRouter();
-  const [filters, setFilters] = useState({
-    search: "",
-    syncStatus: null as string | null,
-    codeIntelMode: null as string | null,
-    llmProvider: null as string | null,
-  });
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [syncStatus, setSyncStatus] = useQueryState("syncStatus");
+  const [codeIntelMode, setCodeIntelMode] = useQueryState("codeIntelMode");
+  const [llmProvider, setLlmProvider] = useQueryState("llmProvider");
+
+  const filters = { search, syncStatus, codeIntelMode, llmProvider };
+
+  const handleFiltersChange = useCallback(
+    (next: typeof filters) => {
+      setSearch(next.search || null);
+      setSyncStatus(next.syncStatus);
+      setCodeIntelMode(next.codeIntelMode);
+      setLlmProvider(next.llmProvider);
+    },
+    [setSearch, setSyncStatus, setCodeIntelMode, setLlmProvider],
+  );
 
   const { data: filteredProjects } = useProjectList(filters);
   const columns = useMemo(() => createProjectColumns(), []);
@@ -31,13 +42,13 @@ export function ProjectListing() {
             연결된 프로젝트와 코드 저장소를 관리합니다.
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" disabled>
           <Plus className="h-4 w-4" />
           프로젝트 추가
         </Button>
       </div>
 
-      <ProjectToolbar filters={filters} onFiltersChange={setFilters} />
+      <ProjectToolbar filters={filters} onFiltersChange={handleFiltersChange} />
 
       <DataTable
         columns={columns}
