@@ -1,144 +1,118 @@
 # IssueHub 사용자 플로우 (User Flow)
 
-> Phase 0~4 전체 사용자 여정을 포괄하는 플로우차트
+> MVP 기획서 기반 사용자 여정 플로우차트
+> 최종 수정: 2026-04-09
 
 ## 전체 사용자 플로우
 
 ```mermaid
 flowchart TD
     START([사용자 접속]) --> LOGIN{로그인 여부}
-    LOGIN -->|미인증| SIGNUP[회원가입 / 로그인]
-    LOGIN -->|인증됨| DASHBOARD
+    LOGIN -->|미인증| SIGNUP[로그인]
+    LOGIN -->|인증됨| FIRST{첫 로그인?}
+    SIGNUP --> FIRST
 
-    SIGNUP --> FIRST_LOGIN{첫 로그인?}
-    FIRST_LOGIN -->|Yes| ONBOARD[온보딩]
-    FIRST_LOGIN -->|No| DASHBOARD
+    FIRST -->|Yes| ONBOARD
+    FIRST -->|No| DASHBOARD
 
-    subgraph ONBOARDING [온보딩 Phase 0-1]
-        ONBOARD --> SET_ORG[조직 설정]
-        SET_ORG --> CREATE_PROJECT[프로젝트 등록\nGit URL 입력]
-        CREATE_PROJECT --> INVITE_MEMBER[팀원 초대]
-        INVITE_MEMBER --> READ_POLICY[필수 정책 읽음 확인]
+    subgraph ONBOARDING [온보딩 6단계]
+        ONBOARD[온보딩 위자드 시작]
+        ONBOARD --> OB1[1. 이슈 소스 선택\nJira / Notion / GitHub / GitLab]
+        OB1 --> OB2[2. 연동 설정\nOAuth / API Key → n8n 웹훅 자동 등록]
+        OB2 --> OB3[3. 첫 정책 등록\n샘플 템플릿 → 커스터마이징]
+        OB3 --> OB4[4. 테스트 이슈 생성\nAI 분석 결과 확인]
+        OB4 --> OB5[5. 코드 생성 엔진 선택\nOpenHands / LLM 직접]
+        OB5 --> OB6[6. 알림 채널 연결\nSlack / Teams / Email]
     end
 
-    READ_POLICY --> DASHBOARD
+    OB6 --> DASHBOARD
 
-    subgraph DASH [대시보드 Phase 1]
+    subgraph DASH [대시보드]
         DASHBOARD[대시보드 홈]
-        DASHBOARD --> SUMMARY[요약 카드\nOPEN / IN_PROGRESS / RESOLVED / SLA 위반]
-        DASHBOARD --> RECENT[최근 이슈 목록]
-        DASHBOARD --> WORKLOAD[팀 워크로드 차트]
-        DASHBOARD --> SLA_STATUS[SLA 현황]
+        DASHBOARD --> STATS[통계 카드\nTotal / In-Progress / Completed]
+        DASHBOARD --> RECENT[최근 이슈 목록\nPriority + AI 분석 상태]
+        DASHBOARD --> ACCURACY[정책 매칭 정확도 트렌드\n목표: 90%]
+        DASHBOARD --> INSIGHT[AI Architectural Insight\n자동 인사이트 + 액션 제안]
     end
 
-    SUMMARY -->|클릭| ISSUE_LIST
+    STATS -->|클릭| ISSUE_LIST
     RECENT -->|행 클릭| ISSUE_DETAIL
-    SLA_STATUS -->|위반 클릭| ISSUE_DETAIL
 
-    subgraph ISSUES [이슈 관리 Phase 1]
-        ISSUE_LIST[이슈 목록\nDataTable + 필터 + 검색]
+    subgraph ISSUES [이슈 관리]
+        ISSUE_LIST[이슈 목록\nDataTable + 필터 + 검색\nPriority / Status / Source / AI 상태]
         ISSUE_LIST -->|행 클릭| ISSUE_DETAIL[이슈 상세]
-        ISSUE_LIST -->|+ 새 이슈| ISSUE_CREATE[이슈 생성 폼\n제목 / 설명 / 우선순위 / 담당자]
+        ISSUE_LIST -->|+ 새 이슈| ISSUE_CREATE[이슈 생성 폼]
         ISSUE_CREATE --> ISSUE_LIST
-
-        ISSUE_DETAIL --> EDIT_ISSUE[이슈 수정]
-        ISSUE_DETAIL --> STATUS_CHANGE[상태 변경\nOPEN → IN_PROGRESS → RESOLVED]
-        ISSUE_DETAIL --> ASSIGN[담당자 변경]
     end
 
-    subgraph AI_ANALYSIS [AI 코드 분석 Phase 3]
-        ISSUE_DETAIL --> AI_TAB[AI 분석 탭]
-        AI_TAB --> AFFECTED_FILES[영향 파일 목록\n파일:라인 + 함수명 + 이유]
-        AI_TAB --> CHANGE_HISTORY[최근 변경 이력\n누가 / 언제 / 무엇을]
-        AI_TAB --> SIMILAR_ISSUES[유사 과거 이슈]
-        AI_TAB --> FIX_SUGGEST[AI 수정 제안]
-        AFFECTED_FILES -->|파일 클릭| CODE_VIEW[코드 하이라이트 뷰]
+    subgraph AI_ANALYSIS [AI 분석 + 코드 생성]
+        ISSUE_DETAIL --> AI_PANEL[AI 분석 패널\nMatched Policy + Confidence Score]
+        AI_PANEL --> SOLUTION[Suggested Solution\n코드 인라인 포함]
+        SOLUTION --> CODE_GEN{코드 생성 시작?}
+        CODE_GEN -->|Yes| ENGINE{엔진 선택}
+        ENGINE -->|OpenHands| OH[OpenHands PR 생성]
+        ENGINE -->|LLM 직접| LLM[LLM 코드 생성 → PR]
+        OH --> PR_CREATED[PR 생성 완료\nKafka 이벤트]
+        LLM --> PR_CREATED
+        CODE_GEN -->|No| MANUAL[수동 처리]
     end
 
-    subgraph AUTO_DEV [자동 개발 Phase 3]
-        AI_TAB --> AUTO_DEV_BTN[자동 개발 시작 버튼]
-        AUTO_DEV_BTN --> CONFIRM_DIALOG{확인 다이얼로그}
-        CONFIRM_DIALOG -->|확인| AGENT_RUN[코딩 에이전트 실행\nOpenHands]
-        CONFIRM_DIALOG -->|취소| AI_TAB
-        AGENT_RUN --> PROGRESS[실시간 진행 상태\n분석 중 → 수정 중 → 테스트 중]
-        PROGRESS --> PR_CREATED[PR 생성 완료\nPR URL + 이슈 자동 연결]
-        PR_CREATED --> REVIEW_PR[PR 리뷰]
-        REVIEW_PR --> STATUS_CHANGE
+    subgraph POLICY_FAIL [정책 매칭 실패]
+        AI_PANEL --> MATCH{정책 매칭 성공?}
+        MATCH -->|No| ALERT[관리자에게 정책 추가 알림]
+        ALERT --> FALLBACK[LLM 일반 지식으로 방안 제시]
+        FALLBACK --> MANUAL_RESOLVE[관리자 수동 처리]
+        MANUAL_RESOLVE --> SUGGEST_POLICY[정책 역등록 제안\nAI가 정책 초안 생성]
+        SUGGEST_POLICY --> ADMIN_APPROVE{관리자 승인?}
+        ADMIN_APPROVE -->|Yes| NEW_POLICY[신규 정책 등록\npgvector 저장]
+        ADMIN_APPROVE -->|No| DISCARD[폐기]
     end
 
-    subgraph PROJECT_MGMT [프로젝트 관리 Phase 1]
-        DASHBOARD -->|사이드바| PROJECT_LIST[프로젝트 목록]
-        PROJECT_LIST --> PROJECT_CREATE[프로젝트 생성\n이름 / Git URL / 브랜치]
-        PROJECT_LIST --> PROJECT_SETTINGS[프로젝트 설정\n코드 분석 모드 / LLM 선택]
-        PROJECT_LIST -->|프로젝트 스위처| SWITCH_PROJECT[프로젝트 전환\n→ 대시보드/이슈 필터링]
+    subgraph APPROVAL [승인 워크플로우]
+        PR_CREATED --> APPROVAL_PAGE[승인 페이지\nAI Review Summary + Changed Files]
+        APPROVAL_PAGE --> APPROVE{관리자 판단}
+        APPROVE -->|승인| MERGE[PR 머지]
+        APPROVE -->|거절| REJECT_REASON{거절 사유}
+        REJECT_REASON -->|코드 수정| CODE_GEN
+        REJECT_REASON -->|정책 수정| POLICY_EDIT[정책 수정 → 재분석]
+        POLICY_EDIT --> AI_PANEL
     end
 
-    subgraph CONNECTOR [커넥터 설정 Phase 2]
-        DASHBOARD -->|사이드바| CONNECTOR_LIST[커넥터 관리]
-        CONNECTOR_LIST --> ADD_CONNECTOR[+ 새 커넥터\nJira / GitHub / Slack]
-        ADD_CONNECTOR --> OAUTH[OAuth 인증 플로우]
-        OAUTH --> SELECT_PROJECT_SYNC[동기화 프로젝트 선택]
-        SELECT_PROJECT_SYNC --> FIELD_MAPPING[필드 매핑 설정\nJira 필드 ↔ IssueHub 필드]
-        FIELD_MAPPING --> SYNC_STATUS[동기화 상태 확인\n성공 ✅ / 실패 ❌ / 마지막 동기화]
+    subgraph POLICY_MGMT [정책 관리]
+        DASHBOARD -->|사이드바| POLICY_LIST[정책 목록\n이름 / 카테고리 / 상태 / 매칭 수]
+        POLICY_LIST --> POLICY_CREATE[정책 생성/편집\n텍스트 → 청킹 → 임베딩 → pgvector]
+        POLICY_LIST --> POLICY_SUGGEST[역등록 제안 탭\nAI 제안 목록]
     end
 
-    subgraph AUTOMATION [자동화 규칙 Phase 2+]
-        DASHBOARD -->|사이드바| RULE_LIST[자동화 규칙 목록]
-        RULE_LIST --> CREATE_RULE[+ 새 규칙]
-        CREATE_RULE --> TRIGGER[1. 트리거 선택\n이슈 생성 / 상태 변경 / SLA 위반]
-        TRIGGER --> CONDITION[2. 조건 설정\n제목 포함 / 소스 = / 우선순위 =]
-        CONDITION --> ACTION[3. 액션 설정\n우선순위 변경 / 팀 배정 / 알림 발송]
-        ACTION --> DRY_RUN[Dry-Run 테스트\n최근 10건 시뮬레이션]
-        DRY_RUN --> ACTIVATE[규칙 활성화]
+    subgraph INTEGRATION [연동 설정]
+        DASHBOARD -->|사이드바| INTEG_PAGE[연동 설정 페이지]
+        INTEG_PAGE --> SOURCE[이슈 소스 설정\nJira / Notion / GitHub / GitLab]
+        INTEG_PAGE --> CHANNEL[알림 채널 설정\nSlack / Teams / Email]
+        INTEG_PAGE --> ENGINE_SET[코드 생성 엔진 선택\nOpenHands / LLM 직접]
+    end
+
+    subgraph MONITORING [모니터링]
+        DASHBOARD -->|사이드바| MONITOR[모니터링 대시보드]
+        MONITOR --> SLO[SLO 메트릭\np99 < 2s / 에러율 < 1%]
+        MONITOR --> GRAFANA[Grafana 임베드\nPrometheus + Loki + Tempo]
+        MONITOR --> ALERTS[최근 알림\nCritical / Warning]
     end
 
     style START fill:#e1f5fe
     style DASHBOARD fill:#fff3e0
     style ISSUE_DETAIL fill:#f3e5f5
-    style AI_TAB fill:#e8f5e9
-    style AUTO_DEV_BTN fill:#ffebee
+    style AI_PANEL fill:#e8f5e9
+    style PR_CREATED fill:#ffebee
+    style APPROVAL_PAGE fill:#fce4ec
 ```
 
-## Phase별 기능 범위
+## Bounded Autonomy (자율/승인 경계)
 
-```mermaid
-flowchart LR
-    subgraph P0 [Phase 0: 기반]
-        P0_1[스켈레톤 정리]
-        P0_2[API 공통]
-        P0_3[DB 마이그레이션]
-        P0_4[개발 인프라]
-        P0_5[UI 인프라]
-    end
-
-    subgraph P1 [Phase 1: 인증 + CRUD]
-        P1_1[JWT 인증]
-        P1_2[로그인 UI]
-        P1_3[프로젝트 CRUD]
-        P1_4[이슈 CRUD]
-        P1_5[프론트 실데이터]
-    end
-
-    subgraph P2 [Phase 2: 연동 + 대시보드]
-        P2_1[Jira 동기화]
-        P2_2[커넥터 UI]
-        P2_3[차트 + 트렌드]
-        P2_4[프로젝트 스위처]
-    end
-
-    subgraph P3 [Phase 3: AI 코드 분석]
-        P3_1[Git bare clone]
-        P3_2[Ollama + LLM]
-        P3_3[코드 인덱싱]
-        P3_4[티켓 품질 분석]
-        P3_5[AI 분석 UI]
-    end
-
-    subgraph P4 [Phase 4: 안정화]
-        P4_1[테스트 보강]
-        P4_2[모니터링]
-        P4_3[배포 + 피드백]
-    end
-
-    P0 --> P1 --> P2 --> P3 --> P4
-```
+| 상황 | AI 자율 수행 | 관리자 승인 필요 |
+|------|-------------|----------------|
+| 이슈 분석 + 정책 매칭 | ✅ | |
+| 해결 방안 도출 | ✅ | |
+| 코드 생성 (PR 생성) | ✅ | |
+| PR 머지 | | ✅ 반드시 승인 |
+| 정책 자동 수정/추가 | | ✅ 반드시 승인 |
+| 외부 시스템 변경 | | ✅ 반드시 승인 |

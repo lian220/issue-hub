@@ -1,47 +1,66 @@
 # IssueHub 데이터 플로우 (Data Flow)
 
-> 외부 시스템 ↔ IssueHub ↔ AI 분석 파이프라인 전체 데이터 흐름
+> MVP 기획서 기반 이벤트 드리븐 아키텍처 데이터 흐름
+> 최종 수정: 2026-04-09
 
 ## 1. 전체 시스템 데이터 플로우
 
 ```mermaid
 flowchart TB
-    subgraph EXTERNAL [외부 시스템]
+    subgraph EXTERNAL [외부 시스템 — n8n 연동 허브]
         JIRA[Jira Cloud]
-        GITHUB[GitHub]
-        SLACK[Slack / Discord]
+        NOTION[Notion]
+        GITHUB[GitHub Issues]
+        GITLAB[GitLab Issues]
+        SLACK[Slack]
+        TEAMS[Microsoft Teams]
+        EMAIL[Email]
+    end
+
+    subgraph N8N [n8n — 이벤트 게이트웨이]
+        N8N_IN[Webhook 수신\n이슈 소스 → IssueHub]
+        N8N_OUT[알림 발송\nIssueHub → 알림 채널]
     end
 
     subgraph INBOUND [인바운드 어댑터]
-        WH_RECEIVER[Webhook Receiver\ninfra-webhook]
+        WH_RECEIVER[Webhook Receiver\ninfra-webhook\n멱등성: X-Webhook-Id]
         REST_API[REST API\napp-api]
     end
 
-    subgraph CORE [코어 도메인]
+    subgraph CORE [코어 도메인 — Hexagonal]
         direction TB
-        SIG_VERIFY[서명 검증]
-        FIELD_MAP[필드 매핑\nJira↔IssueHub\nGitHub↔IssueHub]
-        PII_MASK[PII 마스킹]
-        CONFLICT[충돌 검사\nsync_version 비교]
         ISSUE_SVC[IssueService\ncore-issue]
-        PROJECT_SVC[ProjectService\ncore-connector]
-        AUTO_ENGINE[자동화 엔진\ncore-automation]
-        EVENT_BUS[EventBus\n도메인 이벤트]
+        POLICY_SVC[PolicyService\ncore-policy]
+        AI_SVC[AIService\ncore-ai\nSpring AI + RAG]
+        AUTO_ENGINE[AutomationEngine\ncore-automation]
+        OUTBOX[Outbox 테이블\n트랜잭션 원자성]
+    end
+
+    subgraph KAFKA [Kafka — 이벤트 버스]
+        direction LR
+        ISSUE_TOPIC[이슈 생성 이벤트\npartition key: issue_id]
+        ANALYSIS_TOPIC[AI 분석 완료 이벤트]
+        CODEGEN_TOPIC[코드 생성 요청 이벤트]
+        PR_TOPIC[PR 생성 완료 이벤트]
+        DLT[Dead Letter Topic\nretry 3회 실패]
+        DEDUP[Consumer 멱등성\nDB dedup table\nON CONFLICT DO NOTHING]
     end
 
     subgraph PERSISTENCE [영속성 계층]
-        PG[(PostgreSQL 16\n+ pgvector)]
+        PG[(PostgreSQL 16\n+ pgvector HNSW)]
         REDIS[(Redis 7\n캐시)]
     end
 
-    subgraph AI_PIPELINE [AI 코드 분석 파이프라인]
-        direction TB
-        GIT_MIRROR[Git Bare Clone\n주기적 fetch]
-        CODE_CHUNK[코드 청킹\n파일 단위 분할]
-        EMBEDDING[임베딩 생성\nOllama embeddings]
-        VECTOR_STORE[pgvector 저장\ncode_chunks 테이블]
-        SIMILARITY[유사도 검색\ncosine similarity]
-        ENRICHMENT[TicketEnrichmentService\n영향 파일 + 수정 제안]
+    subgraph RAG_PIPELINE [정책 RAG 파이프라인]
+        CHUNKING[문단/섹션 단위 청킹]
+        EMBEDDING[LLM 임베딩 생성\nOllama / Claude]
+        VECTOR_SEARCH[벡터 유사도 검색\npgvector cosine similarity]
+    end
+
+    subgraph CODE_GEN [코드 생성 계층]
+        OPENHANDS[OpenHands\n코딩 에이전트]
+        LLM_DIRECT[LLM 직접 호출\nClaude / Ollama]
+        PR_CREATE[PR 생성\nGitHub / GitLab]
     end
 
     subgraph LLM_LAYER [LLM 계층]
@@ -49,196 +68,193 @@ flowchart TB
         CLAUDE_API[Claude API\n폴백]
     end
 
-    subgraph OUTBOUND [아웃바운드]
-        SYNC_ORCH[동기화 오케스트레이터\nIssueHub → 외부]
-        NOTIF[알림 디스패처\nSlack / Email / Teams]
-        SSE[SSE\n프론트 실시간]
+    subgraph OBSERVABILITY [옵저버빌리티 3축]
+        OTEL[OpenTelemetry Collector]
+        PROMETHEUS[Prometheus + Alertmanager]
+        LOKI[Loki — 로그]
+        TEMPO[Grafana Tempo — 트레이스]
+        GRAFANA[Grafana 대시보드]
+        NODE_EXP[Node Exporter + cAdvisor]
     end
 
     subgraph FRONTEND [프론트엔드 Next.js]
         FE_DASH[대시보드]
         FE_ISSUES[이슈 목록/상세]
         FE_AI[AI 분석 패널]
-        FE_CONNECTOR[커넥터 설정]
+        FE_POLICY[정책 관리]
+        FE_APPROVAL[승인 워크플로우]
+        FE_INTEG[연동 설정]
+        FE_MONITOR[모니터링]
     end
 
-    %% 인바운드 흐름
-    JIRA -->|Webhook\n이슈 변경| WH_RECEIVER
-    GITHUB -->|Webhook\nPR/이슈| WH_RECEIVER
-    SLACK -->|/issue create\n슬래시 커맨드| WH_RECEIVER
-
-    WH_RECEIVER --> SIG_VERIFY
-    SIG_VERIFY --> FIELD_MAP
-    FIELD_MAP --> PII_MASK
-    PII_MASK --> CONFLICT
-    CONFLICT --> ISSUE_SVC
+    %% 이슈 소스 → n8n → IssueHub
+    JIRA -->|Webhook| N8N_IN
+    NOTION -->|Webhook| N8N_IN
+    GITHUB -->|Webhook| N8N_IN
+    GITLAB -->|Webhook| N8N_IN
+    N8N_IN -->|HTTP POST| WH_RECEIVER
 
     %% 프론트엔드 → API
     FRONTEND -->|HTTP| REST_API
     REST_API --> ISSUE_SVC
-    REST_API --> PROJECT_SVC
+    REST_API --> POLICY_SVC
 
-    %% 코어 → 영속성
+    %% 인바운드 → 코어
+    WH_RECEIVER --> ISSUE_SVC
+
+    %% 코어 → 영속성 + Outbox
     ISSUE_SVC --> PG
     ISSUE_SVC --> REDIS
-    PROJECT_SVC --> PG
+    ISSUE_SVC --> OUTBOX
+    POLICY_SVC --> PG
 
-    %% 이벤트 발행
-    ISSUE_SVC --> EVENT_BUS
-    EVENT_BUS --> AUTO_ENGINE
-    EVENT_BUS --> NOTIF
-    EVENT_BUS --> SSE
-
-    %% 자동화
-    AUTO_ENGINE -->|규칙 매칭\n조건 평가\n액션 실행| ISSUE_SVC
-
-    %% 아웃바운드 동기화
-    EVENT_BUS --> SYNC_ORCH
-    SYNC_ORCH -->|PUT /issue/KEY\n필드 역변환| JIRA
-    SYNC_ORCH -->|PATCH /issues/NUM| GITHUB
-
-    %% 알림
-    NOTIF --> SLACK
-    SSE --> FRONTEND
-
-    %% AI 파이프라인
-    GITHUB -.->|git clone --bare| GIT_MIRROR
-    GIT_MIRROR --> CODE_CHUNK
-    CODE_CHUNK --> EMBEDDING
+    %% 정책 등록 → RAG 파이프라인
+    POLICY_SVC --> CHUNKING
+    CHUNKING --> EMBEDDING
     EMBEDDING --> LLM_LAYER
-    LLM_LAYER --> VECTOR_STORE
-    VECTOR_STORE --> PG
+    LLM_LAYER --> PG
 
-    %% 이슈 → AI 분석
-    ISSUE_SVC -->|이슈 생성/수정 이벤트| ENRICHMENT
-    ENRICHMENT --> SIMILARITY
-    SIMILARITY --> VECTOR_STORE
-    ENRICHMENT --> LLM_LAYER
-    ENRICHMENT -->|분석 결과 저장| PG
+    %% Outbox → Kafka (Debezium CDC / Polling)
+    OUTBOX -->|CDC / Polling| ISSUE_TOPIC
+
+    %% Kafka 이벤트 체인
+    ISSUE_TOPIC -->|Consumer + dedup| AI_SVC
+    AI_SVC --> VECTOR_SEARCH
+    VECTOR_SEARCH --> PG
+    AI_SVC --> LLM_LAYER
+    AI_SVC --> ANALYSIS_TOPIC
+
+    ANALYSIS_TOPIC --> AUTO_ENGINE
+    AUTO_ENGINE --> CODEGEN_TOPIC
+
+    CODEGEN_TOPIC --> CODE_GEN
+    OPENHANDS --> PR_CREATE
+    LLM_DIRECT --> PR_CREATE
+    PR_CREATE --> PR_TOPIC
+
+    %% 실패 → DLT
+    CODEGEN_TOPIC -.->|실패/타임아웃| DLT
+    DLT -.->|알림| N8N_OUT
+
+    %% 알림 발송
+    PR_TOPIC --> N8N_OUT
+    N8N_OUT --> SLACK
+    N8N_OUT --> TEAMS
+    N8N_OUT --> EMAIL
 
     %% LLM 폴백
     OLLAMA -.->|실패 시| CLAUDE_API
+
+    %% 옵저버빌리티
+    CORE --> OTEL
+    OTEL --> PROMETHEUS
+    OTEL --> LOKI
+    OTEL --> TEMPO
+    NODE_EXP --> PROMETHEUS
+    PROMETHEUS --> GRAFANA
+    LOKI --> GRAFANA
+    TEMPO --> GRAFANA
+    PROMETHEUS --> |Alertmanager| SLACK
 
     %% 프론트 표시
     REST_API --> FE_DASH
     REST_API --> FE_ISSUES
     REST_API --> FE_AI
-    REST_API --> FE_CONNECTOR
+    REST_API --> FE_POLICY
+    REST_API --> FE_APPROVAL
+    REST_API --> FE_INTEG
+    REST_API --> FE_MONITOR
 
     style EXTERNAL fill:#e3f2fd
     style CORE fill:#fff8e1
-    style AI_PIPELINE fill:#e8f5e9
+    style KAFKA fill:#fff3e0
+    style RAG_PIPELINE fill:#e8f5e9
     style LLM_LAYER fill:#fce4ec
     style PERSISTENCE fill:#f3e5f5
     style FRONTEND fill:#e0f2f1
+    style OBSERVABILITY fill:#eceff1
+    style N8N fill:#e1f5fe
+    style CODE_GEN fill:#fff9c4
 ```
 
-## 2. 이슈 동기화 상세 플로우
+## 2. 이슈 처리 이벤트 체인 (시퀀스 다이어그램)
 
 ```mermaid
 sequenceDiagram
-    participant J as Jira Cloud
+    participant EXT as 외부 이슈 소스
+    participant N8N as n8n 허브
     participant WH as Webhook Receiver
-    participant SV as Signature Verifier
-    participant FM as Field Mapper
-    participant PM as PII Masker
-    participant CR as Conflict Resolver
     participant IS as IssueService
     participant DB as PostgreSQL
-    participant EB as EventBus
-    participant AE as Automation Engine
-    participant SO as Sync Orchestrator
-    participant NT as Notification
+    participant OB as Outbox
+    participant KF as Kafka
+    participant AI as AI Service
+    participant PV as pgvector
+    participant LLM as Ollama/Claude
+    participant CG as OpenHands/LLM
+    participant AP as 관리자
+    participant NT as 알림 채널
 
-    Note over J,NT: 인바운드: Jira → IssueHub
-    J->>WH: Webhook (이슈 변경)
-    WH->>SV: 서명 검증 요청
-    SV-->>WH: 검증 성공
-    WH->>FM: 페이로드 파싱 + 필드 매핑
-    FM-->>WH: Jira→IssueHub 변환 (ADF→MD 등)
-    WH->>PM: PII 마스킹 요청
-    PM-->>WH: 민감정보 마스킹 완료
-    WH->>CR: 충돌 검사 (sync_version 비교)
-    CR-->>WH: 충돌 없음
-    WH->>IS: 저장 요청
-    IS->>DB: INSERT/UPDATE + sync_version++
-    IS->>EB: IssueUpdatedEvent 발행
+    Note over EXT,NT: 이슈 등록 → AI 분석 → 코드 생성 → 승인
 
-    Note over EB,NT: 이벤트 후처리
-    EB->>AE: 이벤트 전달
-    AE->>AE: 활성 규칙 조회 + 트리거 매칭 + 조건 평가
-    AE->>IS: 액션 실행 (우선순위 변경 등)
-    EB->>NT: 알림 발송 (Slack/Teams/Email)
-    EB-->>SO: SSE → 프론트 실시간 업데이트
+    EXT->>N8N: Webhook (이슈 변경)
+    N8N->>WH: HTTP POST (멱등성: X-Webhook-Id)
+    WH->>IS: 이슈 생성 요청
+    IS->>DB: INSERT issue + INSERT outbox (동일 트랜잭션)
+    DB-->>IS: 저장 완료
+    OB->>KF: 이슈 생성 이벤트 (CDC/Polling)
 
-    Note over IS,J: 아웃바운드: IssueHub → Jira
-    IS->>EB: IssueUpdatedEvent (사용자 수정)
-    EB->>SO: 커넥터 식별
-    SO->>SO: 변경 필드 diff 추출 + 역변환
-    SO->>J: PUT /rest/api/3/issue/{key}
-    J-->>SO: 200 OK
-    SO->>DB: sync_status=SYNCED, sync_version++
-```
+    Note over KF,LLM: AI 이슈 분석 (비동기)
+    KF->>AI: Consumer (dedup 체크: ON CONFLICT DO NOTHING)
+    AI->>PV: 정책 RAG 검색 (cosine similarity)
+    PV-->>AI: 관련 정책 TOP-K
 
-## 3. AI 코드 분석 파이프라인
-
-```mermaid
-sequenceDiagram
-    participant GH as GitHub Repo
-    participant GM as Git Mirror
-    participant CC as Code Chunker
-    participant OL as Ollama (LLM)
-    participant PG as pgvector (PostgreSQL)
-    participant IS as IssueService
-    participant TE as TicketEnrichment
-    participant FE as Frontend
-
-    Note over GH,PG: 코드 인덱싱 (백그라운드, 주기적)
-    GH->>GM: git clone --bare / git fetch
-    GM->>CC: 파일 단위 청킹
-    CC->>OL: 임베딩 생성 요청 (POST /api/embeddings)
-    OL-->>CC: 벡터 반환
-    CC->>PG: code_chunks 테이블에 저장 (content + embedding)
-
-    Note over IS,FE: 이슈 AI 분석 (이슈 생성/수정 시)
-    IS->>TE: IssueCreatedEvent (제목 + 설명)
-    TE->>PG: 유사도 검색 (cosine similarity)
-    PG-->>TE: 관련 코드 청크 TOP-K
-    TE->>OL: 분석 요청 (POST /api/generate)\n이슈 + 관련 코드 → 프롬프트
-    OL-->>TE: 분석 결과\n- 영향 파일\n- 수정 제안\n- 유사 이슈
-
-    alt Ollama 실패
-        TE->>TE: Claude API 폴백
+    alt 정책 매칭 성공
+        AI->>LLM: 정책 기반 해결 방안 생성
+        LLM-->>AI: 해결 방안 + 신뢰도
+    else 정책 매칭 실패
+        AI->>NT: "정책 추가 필요" 알림
+        AI->>LLM: 일반 지식 기반 방안 생성
+        LLM-->>AI: 해결 방안 (정책 없음 표시)
     end
 
-    TE->>PG: 분석 결과 저장 (issue_ai_analysis)
-    TE-->>FE: API 응답 → AI 분석 패널 렌더링
+    AI->>DB: 분석 결과 저장
+    AI->>KF: 코드 생성 요청 이벤트
 
-    Note over FE,FE: 사용자 인터랙션
-    FE->>FE: AI 분석 탭 표시\n- 영향 파일 (파일:라인 + 함수명)\n- 변경 이력\n- 유사 이슈\n- 수정 제안
-    FE->>TE: "분석 다시 실행" 버튼
-    TE->>PG: 재분석 (유사도 검색 + LLM)
+    Note over KF,CG: 코드 생성 (비동기, 장시간)
+    KF->>CG: 코드 생성 시작
+
+    alt 성공
+        CG->>CG: PR 생성
+        CG->>KF: PR 생성 완료 이벤트
+    else 실패/타임아웃
+        CG->>KF: Dead Letter Topic
+        KF->>NT: 관리자 알림
+    end
+
+    Note over AP,NT: 승인 워크플로우
+    KF->>AP: 승인 요청 (AI Review Summary 포함)
+
+    alt 승인
+        AP->>CG: PR 머지
+        CG->>NT: 완료 알림
+    else 거절 (코드 수정)
+        AP->>KF: 코드 재생성 요청
+        KF->>CG: 재생성
+    else 거절 (정책 수정)
+        AP->>DB: 정책 업데이트
+        DB->>KF: 재분석 트리거
+        KF->>AI: 재분석
+    end
 ```
 
-## 4. 자동화 규칙 실행 플로우
+## 3. 이벤트 드리븐 설계 원칙
 
-```mermaid
-flowchart LR
-    TRIGGER[트리거 발생\n이슈 생성 / 상태 변경\nSLA 위반 / Webhook]
-    --> MATCH{활성 규칙\n트리거 매칭}
-
-    MATCH -->|매칭됨| EVAL{조건 평가}
-    MATCH -->|매칭 없음| SKIP[스킵]
-
-    EVAL -->|조건 충족| ACTIONS[액션 실행]
-    EVAL -->|조건 불충족| SKIP
-
-    ACTIONS --> A1[우선순위 변경]
-    ACTIONS --> A2[담당자/팀 자동 배정]
-    ACTIONS --> A3[알림 발송\nSlack / Teams / Email]
-    ACTIONS --> A4[상태 변경]
-    ACTIONS --> A5[라벨 추가]
-
-    A1 & A2 & A3 & A4 & A5 --> LOG[실행 이력 저장\n성공/실패 + 상세 로그]
-    LOG --> DASHBOARD[자동화 대시보드\n실행 횟수 / 성공률]
-```
+| 원칙 | 구현 방법 |
+|------|----------|
+| 트랜잭션 원자성 | Transactional Outbox 패턴 (DB저장 + Outbox 동일 트랜잭션) |
+| 이벤트 발행 | Debezium CDC 또는 Polling Publisher로 Outbox → Kafka |
+| Consumer 멱등성 | DB deduplication 테이블 (event_id UNIQUE constraint + `INSERT ... ON CONFLICT DO NOTHING`) |
+| 파티션 키 | issue_id로 동일 이슈 이벤트 순서 보장 |
+| 실패 처리 | Dead Letter Topic + 재처리 정책 (retry 3회 → DLT → 관리자 알림) |
+| 타임아웃 | OpenHands 호출 타임아웃 설정 + 무응답 시 DLT 이동 |
