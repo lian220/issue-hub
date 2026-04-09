@@ -1,17 +1,9 @@
 "use client";
 
-import { Search, Bell, Menu } from "lucide-react";
+import { Search, Bell, Sparkles, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -19,7 +11,7 @@ interface HeaderProps {
 
 export function Header({ onMobileMenuToggle }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -30,13 +22,13 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
         <Menu className="h-5 w-5" />
       </Button>
 
-      <div className="relative flex-1 max-w-md">
+      <div className="relative w-80">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="이슈 검색..."
+          placeholder="Search issues, policies, or users..."
           className="pl-9"
-          aria-label="이슈 검색"
+          aria-label="검색"
         />
       </div>
 
@@ -48,26 +40,25 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
           aria-label="알림"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-full p-1 hover:bg-accent" aria-label="사용자 메뉴">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs">관리</AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>내 계정</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>프로필</DropdownMenuItem>
-            <DropdownMenuItem>설정</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              로그아웃
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="AI Insights"
+        >
+          <Sparkles className="h-5 w-5" />
+        </Button>
+
+        <div className="flex items-center gap-3 ml-2">
+          <div className="hidden sm:block text-right">
+            <p className="text-sm font-medium leading-none">Admin</p>
+            <p className="text-xs text-muted-foreground">관리자</p>
+          </div>
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs">AD</AvatarFallback>
+          </Avatar>
+        </div>
       </div>
     </header>
   );
