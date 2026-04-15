@@ -68,6 +68,13 @@ coverage/
 # Playwright MCP
 .playwright-mcp/
 
+# Playwright test artifacts
+playwright-report/
+test-results/
+
+# Superpowers brainstorm
+.superpowers/
+
 # Misc
 *.bak
 *.tmp
