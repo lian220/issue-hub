@@ -1,6 +1,11 @@
 "use client";
 
-import { FileCode2, GitCommit, Link2, Lightbulb, Sparkles } from "lucide-react";
+import {
+  Sparkles,
+  Shield,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -8,130 +13,170 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { AiAnalysis } from "@/constants/mock-data";
+import { Button } from "@/components/ui/button";
+import { ConfidenceGauge } from "@/components/common/confidence-gauge";
 
 interface AiAnalysisPanelProps {
-  analysis: AiAnalysis | undefined;
+  analysis: {
+    matchedPolicy?: string;
+    policyCategory?: string;
+    confidenceScore?: number;
+    suggestedSolution?: string;
+    linkedResources?: { title: string; type: "doc" | "link" }[];
+  } | null;
 }
 
+const DEFAULT_ANALYSIS = {
+  matchedPolicy: "Performance Optimization v2.1",
+  policyCategory: "Infrastructure Standards",
+  confidenceScore: 94,
+  suggestedSolution:
+    'Add a composite index on user_id and timestamp columns in the user_logs table. The current query performs a full table scan due to missing indexes. Consider partitioning the table by month for queries that filter by date range.',
+  linkedResources: [
+    { title: "Database Optimization Guide", type: "doc" as const },
+    { title: "Query Performance Benchmarks", type: "doc" as const },
+    { title: "Infrastructure Standards Wiki", type: "link" as const },
+    { title: "Related PR #4521", type: "link" as const },
+  ],
+};
+
 export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
-  if (!analysis) {
+  const data = analysis ?? DEFAULT_ANALYSIS;
+
+  if (!data) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <Sparkles className="mb-2 h-8 w-8" />
-          <p className="text-sm">AI 분석이 아직 수행되지 않았습니다.</p>
-          <p className="text-xs mt-1">코드 인덱싱이 완료되면 자동으로 분석됩니다.</p>
+          <p className="text-sm">AI analysis has not been performed yet.</p>
+          <p className="mt-1 text-xs">
+            Analysis will begin automatically once code indexing is complete.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
+  const {
+    matchedPolicy,
+    policyCategory,
+    confidenceScore,
+    suggestedSolution,
+    linkedResources,
+  } = data;
+
   return (
-    <div className="space-y-4">
-      {/* 영향 파일 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2 pb-3">
-          <FileCode2 className="h-4 w-4 text-blue-600" />
-          <CardTitle className="text-sm font-medium">영향 파일</CardTitle>
-          <Badge variant="outline" className="ml-auto text-xs">
-            {analysis.affectedFiles.length}개
+    <Card className="h-fit">
+      {/* Header */}
+      <CardHeader className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-blue-500" />
+            <CardTitle className="text-base">Precision Analysis</CardTitle>
+          </div>
+          <Badge
+            variant="secondary"
+            className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+          >
+            Live Insight
           </Badge>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {analysis.affectedFiles.map((file, i) => (
-              <div
-                key={i}
-                className="rounded-md border p-3 text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <code className="font-mono text-xs text-blue-600">
-                    {file.path}:{file.line}
-                  </code>
-                  <span className="text-muted-foreground">—</span>
-                  <code className="font-mono text-xs">{file.symbol}</code>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{file.reason}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </CardHeader>
 
-      {/* 최근 변경 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2 pb-3">
-          <GitCommit className="h-4 w-4 text-orange-600" />
-          <CardTitle className="text-sm font-medium">최근 변경</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {analysis.recentChanges.map((change, i) => (
-              <div key={i} className="flex items-start gap-3 text-sm">
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-orange-400" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{change.author}</span>
-                    <span className="text-xs text-muted-foreground">{change.date}</span>
-                  </div>
+      <CardContent className="space-y-6">
+        {/* Matched Policy */}
+        {matchedPolicy && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Matched Policy
+            </p>
+            <div className="flex items-center gap-2 rounded-lg border p-3">
+              <Shield className="h-4 w-4 shrink-0 text-blue-600" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium">{matchedPolicy}</p>
+                {policyCategory && (
                   <p className="text-xs text-muted-foreground">
-                    <code className="font-mono">{change.file}</code> — {change.message}
+                    {policyCategory}
                   </p>
-                </div>
+                )}
               </div>
-            ))}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* 유사 과거 이슈 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2 pb-3">
-          <Link2 className="h-4 w-4 text-purple-600" />
-          <CardTitle className="text-sm font-medium">유사 과거 이슈</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {analysis.similarIssues.map((issue, i) => (
-              <div key={i} className="flex items-center justify-between rounded-md border p-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <code className="font-mono text-xs text-muted-foreground">{issue.id}</code>
-                  <span>{issue.title}</span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={
-                    issue.status === "RESOLVED"
-                      ? "border-green-300 text-green-700"
-                      : "border-yellow-300 text-yellow-700"
-                  }
+        {/* Confidence Score */}
+        {confidenceScore != null && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Confidence Score
+            </p>
+            <div className="flex items-center gap-4">
+              <ConfidenceGauge score={confidenceScore} size={72} />
+              <div>
+                <p className="text-2xl font-bold">{confidenceScore}%</p>
+                <p className="text-xs text-muted-foreground">
+                  High confidence match
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Suggested Solution */}
+        {suggestedSolution && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Suggested Solution
+            </p>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {suggestedSolution.split(/(`[^`]+`)/).map((part, i) =>
+                part.startsWith("`") && part.endsWith("`") ? (
+                  <code
+                    key={i}
+                    className="rounded bg-muted px-1 py-0.5 text-xs font-mono text-foreground"
+                  >
+                    {part.slice(1, -1)}
+                  </code>
+                ) : (
+                  <span key={i}>{part}</span>
+                ),
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <Button className="w-full gap-2" size="lg">
+          <Sparkles className="h-4 w-4" />
+          Start Code Generation
+        </Button>
+
+        {/* Linked Resources */}
+        {linkedResources && linkedResources.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Linked Resources
+            </p>
+            <div className="space-y-1">
+              {linkedResources.map((resource) => (
+                <div
+                  key={resource.title}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/50 cursor-pointer"
                 >
-                  {issue.status === "RESOLVED" ? "해결됨" : "진행 중"}
-                </Badge>
-              </div>
-            ))}
+                  {resource.type === "doc" ? (
+                    <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                  ) : (
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                  <span className="text-sm text-blue-600 dark:text-blue-400">
+                    {resource.title}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* 수정 제안 */}
-      <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/30">
-        <CardHeader className="flex flex-row items-center gap-2 pb-3">
-          <Lightbulb className="h-4 w-4 text-blue-600" />
-          <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-400">
-            AI 수정 제안
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-relaxed text-blue-900 dark:text-blue-200">
-            {analysis.suggestion}
-          </p>
-          <p className="mt-2 text-xs text-blue-600/70">
-            분석 시각: {new Date(analysis.analyzedAt).toLocaleString("ko-KR")}
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
