@@ -1,5 +1,3 @@
-"use client";
-
 import {
   CircleDot,
   Clock,
@@ -10,9 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const stats = [
   {
-    title: "Total Issues",
+    title: "전체 이슈",
     value: "2,540",
-    subtitle: "+12% this month",
+    subtitle: "+12% 이번 달",
     icon: CircleDot,
     iconBg: "bg-blue-100 dark:bg-blue-950",
     iconColor: "text-blue-600",
@@ -20,9 +18,9 @@ const stats = [
     trendUp: true,
   },
   {
-    title: "In-Progress",
+    title: "진행 중",
     value: "48",
-    subtitle: "Active Sprints",
+    subtitle: "활성 스프린트",
     icon: Clock,
     iconBg: "bg-yellow-100 dark:bg-yellow-950",
     iconColor: "text-yellow-600",
@@ -30,9 +28,9 @@ const stats = [
     trendUp: false,
   },
   {
-    title: "Completed",
+    title: "완료",
     value: "2,492",
-    subtitle: "98.1% Success Rate",
+    subtitle: "98.1% 성공률",
     icon: CheckCircle2,
     iconBg: "bg-green-100 dark:bg-green-950",
     iconColor: "text-green-600",

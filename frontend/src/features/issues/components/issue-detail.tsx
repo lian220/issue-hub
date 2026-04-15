@@ -20,15 +20,15 @@ interface IssueDetailProps {
 /** Stitch design mock data for the detail page */
 const MOCK_DETAIL = {
   ticketId: "ISSUE-4829",
-  title: "Optimize Database Query for User Logs",
+  title: "사용자 로그 DB 쿼리 최적화",
   priority: "HIGH" as const,
   status: "IN_PROGRESS" as const,
   source: "Jira",
   description:
-    "The current database query for fetching user logs is experiencing significant performance degradation under high load. The query execution time has increased from 200ms to over 4 seconds during peak hours, affecting the overall application responsiveness and user experience.",
-  assignee: { name: "Sarah Chen", initials: "SC" },
-  createdAt: "March 15, 2026",
-  component: "Backend / Database",
+    "사용자 로그를 조회하는 현재 DB 쿼리가 고부하 상황에서 심각한 성능 저하를 보이고 있습니다. 피크 타임에 쿼리 실행 시간이 200ms에서 4초 이상으로 증가하여, 전체 애플리케이션 응답성과 사용자 경험에 영향을 미치고 있습니다.",
+  assignee: { name: "김서연", initials: "김" },
+  createdAt: "2026년 3월 15일",
+  component: "백엔드 / 데이터베이스",
   affectedQuery: `SELECT ul.*, u.name, u.email
 FROM user_logs ul
 JOIN users u ON ul.user_id = u.id
@@ -47,7 +47,7 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
         <Link href="/issues" className="hover:text-foreground">
-          Issues
+          이슈
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="text-foreground font-medium">{d.ticketId}</span>
@@ -63,15 +63,15 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
               variant="secondary"
               className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
             >
-              HIGH PRIORITY
+              높은 우선순위
             </Badge>
             <Badge
               variant="secondary"
               className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
             >
-              IN PROGRESS
+              진행 중
             </Badge>
-            <Badge variant="outline">Source: {d.source}</Badge>
+            <Badge variant="outline">소스: {d.source}</Badge>
           </div>
 
           {/* Title */}
@@ -80,7 +80,7 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
           {/* Description */}
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Description
+              설명
             </h2>
             <p className="text-sm leading-relaxed">{d.description}</p>
           </div>
@@ -94,21 +94,21 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-xs text-muted-foreground">Assignee</p>
+                <p className="text-xs text-muted-foreground">담당자</p>
                 <p className="font-medium">{d.assignee.name}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Created</p>
+                <p className="text-xs text-muted-foreground">생성일</p>
                 <p className="font-medium">{d.createdAt}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Component</p>
+                <p className="text-xs text-muted-foreground">컴포넌트</p>
                 <p className="font-medium">{d.component}</p>
               </div>
             </div>
@@ -117,7 +117,7 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
           {/* Affected Query card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Affected Query</CardTitle>
+              <CardTitle className="text-base">영향받는 쿼리</CardTitle>
             </CardHeader>
             <CardContent>
               <CodeBlock code={d.affectedQuery} language="sql" />
@@ -127,13 +127,13 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
           {/* Performance Impact card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Performance Impact</CardTitle>
+              <CardTitle className="text-base">성능 영향</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <div className="flex items-center justify-between text-sm mb-1.5">
                   <span className="text-muted-foreground">
-                    Avg Execution Time
+                    평균 실행 시간
                   </span>
                   <span className="font-bold text-red-600">
                     {d.avgExecutionTime}s
@@ -148,7 +148,7 @@ export function IssueDetail({ issueId }: IssueDetailProps) {
                   />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Target: &lt; 0.5s | Max observed: {d.maxExecutionTime}s
+                  목표: &lt; 0.5s | 최대 관측값: {d.maxExecutionTime}s
                 </p>
               </div>
             </CardContent>

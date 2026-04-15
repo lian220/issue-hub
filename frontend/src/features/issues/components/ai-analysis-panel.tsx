@@ -27,16 +27,16 @@ interface AiAnalysisPanelProps {
 }
 
 const DEFAULT_ANALYSIS = {
-  matchedPolicy: "Performance Optimization v2.1",
-  policyCategory: "Infrastructure Standards",
+  matchedPolicy: "성능 최적화 v2.1",
+  policyCategory: "인프라 표준",
   confidenceScore: 94,
   suggestedSolution:
-    'Add a composite index on user_id and timestamp columns in the user_logs table. The current query performs a full table scan due to missing indexes. Consider partitioning the table by month for queries that filter by date range.',
+    'user_logs 테이블의 user_id와 timestamp 컬럼에 복합 인덱스를 추가하세요. 현재 쿼리는 인덱스 누락으로 인해 풀 테이블 스캔을 수행합니다. 날짜 범위로 필터링하는 쿼리의 경우 월별 파티셔닝도 고려해 보세요.',
   linkedResources: [
-    { title: "Database Optimization Guide", type: "doc" as const },
-    { title: "Query Performance Benchmarks", type: "doc" as const },
-    { title: "Infrastructure Standards Wiki", type: "link" as const },
-    { title: "Related PR #4521", type: "link" as const },
+    { title: "데이터베이스 최적화 가이드", type: "doc" as const },
+    { title: "쿼리 성능 벤치마크", type: "doc" as const },
+    { title: "인프라 표준 위키", type: "link" as const },
+    { title: "관련 PR #4521", type: "link" as const },
   ],
 };
 
@@ -48,9 +48,9 @@ export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
           <Sparkles className="mb-2 h-8 w-8" />
-          <p className="text-sm">AI analysis has not been performed yet.</p>
+          <p className="text-sm">아직 AI 분석이 수행되지 않았습니다.</p>
           <p className="mt-1 text-xs">
-            Analysis will begin automatically once code indexing is complete.
+            코드 인덱싱이 완료되면 자동으로 분석이 시작됩니다.
           </p>
         </CardContent>
       </Card>
@@ -72,13 +72,13 @@ export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-500" />
-            <CardTitle className="text-base">Precision Analysis</CardTitle>
+            <CardTitle className="text-base">정밀 분석</CardTitle>
           </div>
           <Badge
             variant="secondary"
             className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
           >
-            Live Insight
+            실시간 인사이트
           </Badge>
         </div>
       </CardHeader>
@@ -88,7 +88,7 @@ export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
         {matchedPolicy && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Matched Policy
+              매칭된 정책
             </p>
             <div className="flex items-center gap-2 rounded-lg border p-3">
               <Shield className="h-4 w-4 shrink-0 text-blue-600" />
@@ -108,14 +108,14 @@ export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
         {confidenceScore != null && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Confidence Score
+              신뢰도 점수
             </p>
             <div className="flex items-center gap-4">
               <ConfidenceGauge score={confidenceScore} size={72} />
               <div>
                 <p className="text-2xl font-bold">{confidenceScore}%</p>
                 <p className="text-xs text-muted-foreground">
-                  High confidence match
+                  높은 신뢰도 매칭
                 </p>
               </div>
             </div>
@@ -126,7 +126,7 @@ export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
         {suggestedSolution && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Suggested Solution
+              제안 해결 방안
             </p>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {suggestedSolution.split(/(`[^`]+`)/).map((part, i) =>
@@ -148,14 +148,14 @@ export function AiAnalysisPanel({ analysis }: AiAnalysisPanelProps) {
         {/* CTA */}
         <Button className="w-full gap-2" size="lg">
           <Sparkles className="h-4 w-4" />
-          Start Code Generation
+          코드 생성 시작
         </Button>
 
         {/* Linked Resources */}
         {linkedResources && linkedResources.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Linked Resources
+              연관 리소스
             </p>
             <div className="space-y-1">
               {linkedResources.map((resource) => (

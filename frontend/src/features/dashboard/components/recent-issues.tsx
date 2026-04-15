@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardContent,
@@ -26,62 +24,62 @@ interface HighPriorityIssue {
 
 const MOCK_HIGH_PRIORITY_ISSUES: HighPriorityIssue[] = [
   {
-    title: "Database Connection Pool Exhaustion",
-    subtitle: "Payment Service - PROJ-4829",
+    title: "DB 커넥션 풀 소진",
+    subtitle: "결제 서비스 - PROJ-4829",
     priority: "CRITICAL",
-    status: "In Progress",
+    status: "진행 중",
     aiStatus: "Analyzed",
   },
   {
-    title: "Memory Leak in Worker Thread",
-    subtitle: "Background Jobs - PROJ-4815",
+    title: "워커 스레드 메모리 누수",
+    subtitle: "백그라운드 작업 - PROJ-4815",
     priority: "CRITICAL",
-    status: "Open",
+    status: "열림",
     aiStatus: "In Progress",
   },
   {
-    title: "API Rate Limiting Bypass",
-    subtitle: "Gateway Service - PROJ-4801",
+    title: "API 레이트 리미팅 우회",
+    subtitle: "게이트웨이 서비스 - PROJ-4801",
     priority: "HIGH",
-    status: "In Progress",
+    status: "진행 중",
     aiStatus: "Analyzed",
   },
   {
-    title: "Incorrect Timezone Handling",
-    subtitle: "Scheduler - PROJ-4798",
+    title: "잘못된 타임존 처리",
+    subtitle: "스케줄러 - PROJ-4798",
     priority: "HIGH",
-    status: "Open",
+    status: "열림",
     aiStatus: "Pending",
   },
   {
-    title: "Cache Invalidation Race Condition",
-    subtitle: "Product Service - PROJ-4790",
+    title: "캐시 무효화 경쟁 상태",
+    subtitle: "상품 서비스 - PROJ-4790",
     priority: "HIGH",
-    status: "In Review",
+    status: "검토 중",
     aiStatus: "Analyzed",
   },
 ];
 
-const AI_STATUS_CONFIG: Record<string, { dot: string; text: string }> = {
-  Analyzed: { dot: "bg-green-500", text: "text-green-700 dark:text-green-400" },
-  "In Progress": { dot: "bg-yellow-500", text: "text-yellow-700 dark:text-yellow-400" },
-  Pending: { dot: "bg-gray-400", text: "text-gray-500" },
+const AI_STATUS_CONFIG: Record<string, { dot: string; text: string; label: string }> = {
+  Analyzed: { dot: "bg-green-500", text: "text-green-700 dark:text-green-400", label: "분석 완료" },
+  "In Progress": { dot: "bg-yellow-500", text: "text-yellow-700 dark:text-yellow-400", label: "분석 중" },
+  Pending: { dot: "bg-gray-400", text: "text-gray-500", label: "대기 중" },
 };
 
 export function RecentIssues() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Recent High-Priority Issues</CardTitle>
+        <CardTitle className="text-base">최근 높은 우선순위 이슈</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Issue Title</TableHead>
-              <TableHead className="w-[100px]">Priority</TableHead>
-              <TableHead className="w-[100px]">Status</TableHead>
-              <TableHead className="w-[120px]">AI Analysis</TableHead>
+              <TableHead>이슈 제목</TableHead>
+              <TableHead className="w-[100px]">우선순위</TableHead>
+              <TableHead className="w-[100px]">상태</TableHead>
+              <TableHead className="w-[120px]">AI 분석</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -119,7 +117,7 @@ export function RecentIssues() {
                       <span
                         className={`h-2 w-2 rounded-full ${aiConfig.dot}`}
                       />
-                      <span className={aiConfig.text}>{issue.aiStatus}</span>
+                      <span className={aiConfig.text}>{aiConfig.label}</span>
                     </span>
                   </TableCell>
                 </TableRow>

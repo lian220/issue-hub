@@ -14,7 +14,7 @@ export function createIssueColumns(
   return [
     {
       accessorKey: "title",
-      header: "Issue Title",
+      header: "이슈 제목",
       cell: ({ row }) => {
         const issue = row.original;
         return (
@@ -31,7 +31,7 @@ export function createIssueColumns(
     },
     {
       id: "priority",
-      header: "Priority",
+      header: "우선순위",
       cell: ({ row }) => {
         const config = PRIORITY_CONFIG[row.original.priority];
         return (
@@ -44,7 +44,7 @@ export function createIssueColumns(
     },
     {
       id: "status",
-      header: "Status",
+      header: "상태",
       cell: ({ row }) => {
         const status = row.original.status;
         const statusMap: Record<
@@ -52,27 +52,27 @@ export function createIssueColumns(
           { label: string; className: string }
         > = {
           OPEN: {
-            label: "Open",
+            label: "열림",
             className: "border-blue-300 text-blue-700 bg-blue-50",
           },
           IN_PROGRESS: {
-            label: "In Progress",
+            label: "진행 중",
             className: "border-yellow-300 text-yellow-700 bg-yellow-50",
           },
           RESOLVED: {
-            label: "Resolved",
+            label: "해결됨",
             className: "border-green-300 text-green-700 bg-green-50",
           },
           CLOSED: {
-            label: "Closed",
+            label: "닫힘",
             className: "border-gray-300 text-gray-700 bg-gray-50",
           },
           BLOCKED: {
-            label: "Blocked",
+            label: "차단됨",
             className: "border-red-300 text-red-700 bg-red-50",
           },
           PENDING: {
-            label: "Pending",
+            label: "대기 중",
             className: "border-purple-300 text-purple-700 bg-purple-50",
           },
         };
@@ -87,7 +87,7 @@ export function createIssueColumns(
     },
     {
       id: "source",
-      header: "Source",
+      header: "소스",
       cell: ({ row }) => {
         const source = SOURCE_CONFIG[row.original.source];
         return (
@@ -103,7 +103,7 @@ export function createIssueColumns(
     },
     {
       id: "aiAnalysis",
-      header: "AI Analysis",
+      header: "AI 분석",
       cell: ({ row }) => {
         const hasAi = !!lookups.aiAnalyses[row.original.id];
         if (hasAi) {
@@ -112,7 +112,7 @@ export function createIssueColumns(
               <span className="h-2 w-2 rounded-full bg-green-500" />
               <Sparkles className="h-3.5 w-3.5 text-blue-500" />
               <span className="text-green-700 dark:text-green-400 text-xs">
-                Analyzed
+                분석 완료
               </span>
             </span>
           );
@@ -120,7 +120,7 @@ export function createIssueColumns(
         return (
           <span className="flex items-center gap-1.5 text-sm">
             <span className="h-2 w-2 rounded-full bg-gray-400" />
-            <span className="text-xs text-muted-foreground">Pending</span>
+            <span className="text-xs text-muted-foreground">대기 중</span>
           </span>
         );
       },

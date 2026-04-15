@@ -14,17 +14,17 @@ import type { Issue } from "@/types/issue";
 const PAGE_SIZE = 10;
 
 const STATUS_OPTIONS = [
-  { value: "OPEN", label: "Open" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "RESOLVED", label: "Resolved" },
-  { value: "CLOSED", label: "Closed" },
+  { value: "OPEN", label: "열림" },
+  { value: "IN_PROGRESS", label: "진행 중" },
+  { value: "RESOLVED", label: "해결됨" },
+  { value: "CLOSED", label: "닫힘" },
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: "CRITICAL", label: "Critical" },
-  { value: "HIGH", label: "High" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "LOW", label: "Low" },
+  { value: "CRITICAL", label: "심각" },
+  { value: "HIGH", label: "높음" },
+  { value: "MEDIUM", label: "보통" },
+  { value: "LOW", label: "낮음" },
 ];
 
 const SOURCE_OPTIONS = [
@@ -69,14 +69,14 @@ export function IssueListing() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Issues</h1>
+          <h1 className="text-2xl font-bold tracking-tight">이슈</h1>
           <p className="text-muted-foreground">
-            Manage and track all platform issues in one place.
+            모든 플랫폼 이슈를 한곳에서 관리하고 추적합니다.
           </p>
         </div>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Create Issue
+          새 이슈 생성
         </Button>
       </div>
 
@@ -85,7 +85,7 @@ export function IssueListing() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search issues..."
+            placeholder="이슈 검색..."
             value={filters.search}
             onChange={(e) => {
               setPage(1);
@@ -101,19 +101,19 @@ export function IssueListing() {
         <div className="flex flex-wrap items-center gap-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <FilterGroup
-            label="Status"
+            label="상태"
             options={STATUS_OPTIONS}
             selected={filters.status}
             onSelect={(v) => toggleFilter("status", v)}
           />
           <FilterGroup
-            label="Priority"
+            label="우선순위"
             options={PRIORITY_OPTIONS}
             selected={filters.priority}
             onSelect={(v) => toggleFilter("priority", v)}
           />
           <FilterGroup
-            label="Source"
+            label="소스"
             options={SOURCE_OPTIONS}
             selected={filters.source}
             onSelect={(v) => toggleFilter("source", v)}
@@ -131,10 +131,10 @@ export function IssueListing() {
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
-          Showing {(page - 1) * PAGE_SIZE + 1}
+          {(page - 1) * PAGE_SIZE + 1}
           {" - "}
-          {Math.min(page * PAGE_SIZE, allIssues.length)} of{" "}
-          {allIssues.length} issues
+          {Math.min(page * PAGE_SIZE, allIssues.length)} / 총{" "}
+          {allIssues.length}건
         </span>
         <div className="flex gap-2">
           <Button
@@ -143,7 +143,7 @@ export function IssueListing() {
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
           >
-            Previous
+            이전
           </Button>
           <Button
             variant="outline"
@@ -151,7 +151,7 @@ export function IssueListing() {
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
-            Next
+            다음
           </Button>
         </div>
       </div>
