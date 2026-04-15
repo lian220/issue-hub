@@ -11,19 +11,18 @@ export function AiSuggestionBanner() {
           <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
         </div>
         <div className="flex-1 space-y-1">
-          <h3 className="text-sm font-semibold">AI Optimization Suggestion</h3>
+          <h3 className="text-sm font-semibold">AI 최적화 제안</h3>
           <p className="text-sm text-muted-foreground">
-            We&apos;ve identified 3 redundant rules across your Security Baseline
-            and Network Ingress policies. Merging these could reduce evaluation
-            latency by 24%.
+            보안 기준선과 네트워크 인그레스 정책에서 중복되는 규칙 3개를
+            발견했습니다. 이를 병합하면 평가 레이턴시를 24% 줄일 수 있습니다.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Button size="sm" variant="default">
-            Review Conflicts
+            충돌 검토
           </Button>
           <button className="text-sm text-muted-foreground hover:text-foreground">
-            Dismiss
+            닫기
           </button>
         </div>
       </div>

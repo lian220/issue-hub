@@ -1,89 +1,73 @@
-"use client";
-
-import Link from "next/link";
 import {
   CircleDot,
   Clock,
   CheckCircle2,
-  AlertTriangle,
+  TrendingUp,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useDashboardStats } from "../hooks/useDashboardStats";
+import { Card, CardContent } from "@/components/ui/card";
 
-const cards = [
+const stats = [
   {
-    key: "totalOpen" as const,
-    title: "열린 이슈",
+    title: "전체 이슈",
+    value: "2,540",
+    subtitle: "+12% 이번 달",
     icon: CircleDot,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950",
-    href: "/issues?status=OPEN",
+    iconBg: "bg-blue-100 dark:bg-blue-950",
+    iconColor: "text-blue-600",
+    trend: "+12%",
+    trendUp: true,
   },
   {
-    key: "totalInProgress" as const,
     title: "진행 중",
+    value: "48",
+    subtitle: "활성 스프린트",
     icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-50 dark:bg-yellow-950",
-    href: "/issues?status=IN_PROGRESS",
+    iconBg: "bg-yellow-100 dark:bg-yellow-950",
+    iconColor: "text-yellow-600",
+    trend: null,
+    trendUp: false,
   },
   {
-    key: "totalResolved" as const,
-    title: "해결됨",
+    title: "완료",
+    value: "2,492",
+    subtitle: "98.1% 성공률",
     icon: CheckCircle2,
-    color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-950",
-    href: "/issues?status=RESOLVED",
-  },
-  {
-    key: "totalSlaBreach" as const,
-    title: "SLA 위반",
-    icon: AlertTriangle,
-    color: "text-red-600",
-    bgColor: "bg-red-50 dark:bg-red-950",
-    href: "/issues?slaBreach=true",
-    urgent: true,
+    iconBg: "bg-green-100 dark:bg-green-950",
+    iconColor: "text-green-600",
+    trend: "98.1%",
+    trendUp: true,
   },
 ];
 
-interface SummaryData {
-  totalOpen: number;
-  totalInProgress: number;
-  totalResolved: number;
-  totalSlaBreach: number;
-}
-
 export function SummaryCards() {
-  const { data: dashboard } = useDashboardStats();
-  const data: SummaryData = dashboard.summary;
-
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        const isUrgent = card.urgent && data[card.key] > 0;
-
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {stats.map((stat) => {
+        const Icon = stat.icon;
         return (
-          <Link
-            key={card.key}
-            href={card.href}
-            className={cn(
-              "block rounded-xl border bg-card p-6 text-card-foreground shadow-sm transition-colors hover:bg-muted/50",
-              isUrgent && "border-red-300 dark:border-red-800"
-            )}
-          >
-            <span className="flex items-center justify-between pb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {card.title}
-              </span>
-              <span className={cn("rounded-lg p-2", card.bgColor, isUrgent && "animate-pulse")}>
-                <Icon className={`h-4 w-4 ${card.color}`} />
-              </span>
-            </span>
-            <span className={cn("block text-3xl font-bold", isUrgent && "text-red-600")}>
-              {data[card.key].toLocaleString("ko-KR")}
-            </span>
-          </Link>
+          <Card key={stat.title}>
+            <CardContent className="pt-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.title}</p>
+                  <p className="mt-1 text-3xl font-bold tracking-tight">
+                    {stat.value}
+                  </p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    {stat.trendUp && stat.trend && (
+                      <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {stat.subtitle}
+                    </span>
+                  </div>
+                </div>
+                <div className={`rounded-lg p-3 ${stat.iconBg}`}>
+                  <Icon className={`h-6 w-6 ${stat.iconColor}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>

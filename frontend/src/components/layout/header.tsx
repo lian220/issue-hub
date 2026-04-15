@@ -35,7 +35,7 @@ export function Header() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search issues, policies, or users..."
+            placeholder="이슈, 정책, 사용자 검색..."
             className="pl-9"
             aria-label="검색"
           />
@@ -54,14 +54,14 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="AI Insights"
+            aria-label="AI 인사이트"
           >
             <Sparkles className="h-5 w-5" />
           </Button>
 
           <div className="flex items-center gap-3 ml-2">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium leading-none">Admin</p>
+              <p className="text-sm font-medium leading-none">관리자</p>
               <p className="text-xs text-muted-foreground">관리자</p>
             </div>
             <Avatar className="h-8 w-8">
