@@ -42,7 +42,7 @@ export function Sidebar() {
               IssueHub
             </span>
             <span className="text-[10px] text-sidebar-foreground/50">
-              Precision Intelligence
+              정밀 인텔리전스
             </span>
           </div>
         </Link>

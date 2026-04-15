@@ -104,7 +104,7 @@ export function RecentIssues() {
                           : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
                       }
                     >
-                      {issue.priority === "CRITICAL" ? "Critical" : "High"}
+                      {issue.priority === "CRITICAL" ? "심각" : "높음"}
                     </Badge>
                   </TableCell>
                   <TableCell>

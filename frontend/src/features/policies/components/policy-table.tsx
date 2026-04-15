@@ -29,29 +29,29 @@ interface PolicyRow {
 
 const MOCK_POLICIES: PolicyRow[] = [
   {
-    name: "Security Baseline",
-    description: "Global encryption and port standards",
+    name: "보안 기준선",
+    description: "글로벌 암호화 및 포트 표준",
     category: "SECURITY",
     status: "Active",
     matchCount: "1,204",
   },
   {
-    name: "Perf Standard",
-    description: "API Latency & Bundle Size thresholds",
+    name: "성능 표준",
+    description: "API 레이턴시 및 번들 크기 임계값",
     category: "PERFORMANCE",
     status: "Active",
     matchCount: "85",
   },
   {
-    name: "GDPR Data Purge",
-    description: "Automated PII identification and removal",
+    name: "GDPR 데이터 삭제",
+    description: "자동 PII 식별 및 제거",
     category: "SECURITY",
     status: "Draft",
     matchCount: "0",
   },
   {
-    name: "Dependency Audit",
-    description: "Verify CVE-free library versions",
+    name: "의존성 감사",
+    description: "CVE 없는 라이브러리 버전 검증",
     category: "COMPLIANCE",
     status: "Active",
     matchCount: "442",
@@ -68,7 +68,7 @@ export function PolicyTable() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Active Registry</CardTitle>
+        <CardTitle className="text-base">활성 레지스트리</CardTitle>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <Filter className="h-4 w-4" />
@@ -83,16 +83,16 @@ export function PolicyTable() {
           <TableHeader>
             <TableRow>
               <TableHead className="pl-4 text-xs uppercase text-muted-foreground">
-                Policy Name
+                정책 이름
               </TableHead>
               <TableHead className="text-xs uppercase text-muted-foreground">
-                Category
+                카테고리
               </TableHead>
               <TableHead className="text-xs uppercase text-muted-foreground">
-                Status
+                상태
               </TableHead>
               <TableHead className="text-right pr-4 text-xs uppercase text-muted-foreground">
-                Match Count
+                매칭 횟수
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -127,7 +127,7 @@ export function PolicyTable() {
                           : "bg-gray-400"
                       )}
                     />
-                    <span className="text-sm">{policy.status}</span>
+                    <span className="text-sm">{policy.status === "Active" ? "활성" : "초안"}</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right pr-4 font-mono text-sm">

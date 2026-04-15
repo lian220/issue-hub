@@ -31,7 +31,7 @@ export function AiReviewPanel({ type, text }: AiReviewPanelProps) {
               : "text-orange-700 dark:text-orange-300"
           )}
         >
-          {isSummary ? "AI Review Summary" : "AI Insight - Warning"}
+          {isSummary ? "AI 리뷰 요약" : "AI 인사이트 - 경고"}
         </span>
       </div>
       <p

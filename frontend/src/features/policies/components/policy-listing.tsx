@@ -8,9 +8,9 @@ import { PolicyForm } from "./policy-form";
 import { AiSuggestionBanner } from "./ai-suggestion-banner";
 
 const STATS = [
-  { label: "TOTAL ACTIVE", value: "14" },
-  { label: "COMPLIANCE SCORE", value: "98.2%", valueClass: "text-green-600 dark:text-green-400" },
-  { label: "RECENT MATCHES", value: "142" },
+  { label: "활성 정책", value: "14" },
+  { label: "준수 점수", value: "98.2%", valueClass: "text-green-600 dark:text-green-400" },
+  { label: "최근 매칭", value: "142" },
 ] as const;
 
 export function PolicyListing() {
@@ -19,15 +19,14 @@ export function PolicyListing() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Policies</h1>
+          <h1 className="text-2xl font-bold tracking-tight">정책</h1>
           <p className="text-muted-foreground">
-            Define architectural constraints and automated enforcement rules
-            across your project ecosystem.
+            프로젝트 전반의 아키텍처 제약 조건 및 자동화 규칙을 정의합니다.
           </p>
         </div>
         <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4" />
-          Create New Policy
+          새 정책 생성
         </Button>
       </div>
 

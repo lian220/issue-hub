@@ -16,34 +16,34 @@ export function PolicyForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Create New Policy</CardTitle>
+        <CardTitle className="text-base">새 정책 생성</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Name */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
-            Name
+            이름
           </label>
-          <Input placeholder="e.g. SOC2 Compliance Check" />
+          <Input placeholder="예: SOC2 준수 검사" />
         </div>
 
         {/* Category */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
-            Category
+            카테고리
           </label>
           <div className="flex h-8 items-center rounded-lg border border-input bg-transparent px-2.5 text-sm">
-            <span>Security</span>
+            <span>보안</span>
           </div>
         </div>
 
         {/* Description */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
-            Description
+            설명
           </label>
           <Textarea
-            placeholder="Explain the intent of this policy..."
+            placeholder="이 정책의 목적을 설명하세요..."
             className="min-h-[80px] resize-none"
           />
         </div>
@@ -51,7 +51,7 @@ export function PolicyForm() {
         {/* Rule Logic */}
         <div className="space-y-3">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Rule Logic
+            규칙 로직
           </h4>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -85,17 +85,17 @@ export function PolicyForm() {
           </div>
           <button className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">
             <Plus className="h-3 w-3" />
-            ADD CONDITION
+            조건 추가
           </button>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-2">
           <Button className="bg-blue-600 hover:bg-blue-700">
-            Save Policy
+            정책 저장
           </Button>
           <button className="text-sm text-muted-foreground hover:text-foreground">
-            Save as Draft
+            임시 저장
           </button>
         </div>
       </CardContent>

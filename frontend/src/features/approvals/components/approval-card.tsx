@@ -35,17 +35,17 @@ const PRIORITY_CONFIG: Record<
   { label: string; className: string }
 > = {
   high: {
-    label: "High Priority",
+    label: "높은 우선순위",
     className:
       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   },
   medium: {
-    label: "Medium",
+    label: "보통",
     className:
       "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   },
   low: {
-    label: "Low",
+    label: "낮음",
     className:
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   },
@@ -81,14 +81,14 @@ export function ApprovalCard({ item }: { item: ApprovalItem }) {
 
         <div>
           <label className="mb-1 block text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-            Approval Feedback
+            승인 피드백
           </label>
-          <Input placeholder="Add your feedback before approving or rejecting..." />
+          <Input placeholder="피드백을 입력하세요..." />
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-            Priority
+            우선순위
           </span>
           <span
             className={cn(
@@ -108,7 +108,7 @@ export function ApprovalCard({ item }: { item: ApprovalItem }) {
           className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30"
         >
           <CheckCircle className="size-4" />
-          Approve
+          승인
         </Button>
         <Button
           variant="outline"
@@ -116,7 +116,7 @@ export function ApprovalCard({ item }: { item: ApprovalItem }) {
           className="gap-1.5 border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
         >
           <XCircle className="size-4" />
-          Reject
+          거절
         </Button>
       </CardFooter>
     </Card>
