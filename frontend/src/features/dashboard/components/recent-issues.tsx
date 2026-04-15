@@ -1,86 +1,132 @@
 "use client";
 
-import Link from "next/link";
-import { Clock } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { SOURCE_CONFIG, PRIORITY_CONFIG } from "@/constants/mock-data";
-import { useDashboardStats } from "../hooks/useDashboardStats";
+
+interface HighPriorityIssue {
+  title: string;
+  subtitle: string;
+  priority: "CRITICAL" | "HIGH";
+  status: string;
+  aiStatus: "Analyzed" | "Pending" | "In Progress";
+}
+
+const MOCK_HIGH_PRIORITY_ISSUES: HighPriorityIssue[] = [
+  {
+    title: "Database Connection Pool Exhaustion",
+    subtitle: "Payment Service - PROJ-4829",
+    priority: "CRITICAL",
+    status: "In Progress",
+    aiStatus: "Analyzed",
+  },
+  {
+    title: "Memory Leak in Worker Thread",
+    subtitle: "Background Jobs - PROJ-4815",
+    priority: "CRITICAL",
+    status: "Open",
+    aiStatus: "In Progress",
+  },
+  {
+    title: "API Rate Limiting Bypass",
+    subtitle: "Gateway Service - PROJ-4801",
+    priority: "HIGH",
+    status: "In Progress",
+    aiStatus: "Analyzed",
+  },
+  {
+    title: "Incorrect Timezone Handling",
+    subtitle: "Scheduler - PROJ-4798",
+    priority: "HIGH",
+    status: "Open",
+    aiStatus: "Pending",
+  },
+  {
+    title: "Cache Invalidation Race Condition",
+    subtitle: "Product Service - PROJ-4790",
+    priority: "HIGH",
+    status: "In Review",
+    aiStatus: "Analyzed",
+  },
+];
+
+const AI_STATUS_CONFIG: Record<string, { dot: string; text: string }> = {
+  Analyzed: { dot: "bg-green-500", text: "text-green-700 dark:text-green-400" },
+  "In Progress": { dot: "bg-yellow-500", text: "text-yellow-700 dark:text-yellow-400" },
+  Pending: { dot: "bg-gray-400", text: "text-gray-500" },
+};
 
 export function RecentIssues() {
-  const { data: dashboard } = useDashboardStats();
-  const recentIssues = dashboard.recentIssues;
-
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">최근 이슈</CardTitle>
-        <Link
-          href="/issues"
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          전체 보기 →
-        </Link>
+      <CardHeader>
+        <CardTitle className="text-base">Recent High-Priority Issues</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {recentIssues.map((issue) => {
-            const source = SOURCE_CONFIG[issue.source];
-            const priority = PRIORITY_CONFIG[issue.priority];
-
-            return (
-              <Link
-                key={issue.id}
-                href={`/issues/${issue.id}`}
-                className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
-              >
-                <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${priority.dot}`} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-medium">
-                      {issue.title}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Issue Title</TableHead>
+              <TableHead className="w-[100px]">Priority</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[120px]">AI Analysis</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {MOCK_HIGH_PRIORITY_ISSUES.map((issue) => {
+              const aiConfig = AI_STATUS_CONFIG[issue.aiStatus];
+              return (
+                <TableRow key={issue.subtitle}>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium text-sm">{issue.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {issue.subtitle}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <Badge
-                      variant="outline"
-                      className={`px-1.5 py-0 text-[10px] font-normal ${source.bgColor} ${source.color} border-0`}
+                      variant="secondary"
+                      className={
+                        issue.priority === "CRITICAL"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                          : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                      }
                     >
-                      {source.label}
+                      {issue.priority === "CRITICAL" ? "Critical" : "High"}
                     </Badge>
-                    {issue.externalId && (
-                      <span className="text-muted-foreground/70">
-                        {issue.externalId}
-                      </span>
-                    )}
-                    {issue.slaBreach && (
-                      <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">
-                        SLA 위반
-                      </Badge>
-                    )}
-                    {issue.slaDeadline && !issue.slaBreach && (
-                      <span className="flex items-center gap-0.5">
-                        <Clock className="h-3 w-3" />
-                        SLA
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`shrink-0 text-[10px] ${priority.color} border-0`}
-                >
-                  {priority.label}
-                </Badge>
-              </Link>
-            );
-          })}
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {issue.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex items-center gap-2 text-sm">
+                      <span
+                        className={`h-2 w-2 rounded-full ${aiConfig.dot}`}
+                      />
+                      <span className={aiConfig.text}>{issue.aiStatus}</span>
+                    </span>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
