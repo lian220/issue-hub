@@ -9,3 +9,4 @@
 | 005 | [Airflow 도입 보류 및 적용 기준](005-AIRFLOW-ADOPTION.md) | Accepted | 2026-03-22 |
 | 006 | [k3d (로컬 Kubernetes) 도입 전략](006-K3D-ADOPTION.md) | Accepted | 2026-03-22 |
 | 007 | [Ollama 공유 서버 전략](007-OLLAMA-SHARED-SERVER.md) | Accepted | 2026-03-22 |
+| 008 | [자율 코딩 에이전트 선정 (OpenHands)](008-CODING-AGENT-SELECTION.md) | Accepted | 2026-04-17 |
