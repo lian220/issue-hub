@@ -34,9 +34,11 @@ export function SlackConfigModal({ integration, open, onClose }: SlackConfigModa
   const [newKeyword, setNewKeyword] = useState("");
 
   function addChannel() {
-    const ch = newChannel.trim();
-    if (ch && !monitorChannels.includes(ch)) {
-      setMonitorChannels([...monitorChannels, ch.startsWith("#") ? ch : `#${ch}`]);
+    const raw = newChannel.trim();
+    if (!raw) return;
+    const normalized = raw.startsWith("#") ? raw : `#${raw}`;
+    if (!monitorChannels.includes(normalized)) {
+      setMonitorChannels([...monitorChannels, normalized]);
       setNewChannel("");
     }
   }
@@ -57,6 +59,7 @@ export function SlackConfigModal({ integration, open, onClose }: SlackConfigModa
     setKeywords(keywords.filter((k) => k !== kw));
   }
 
+  // TODO: [BE 연동] apiClient.put(`/integrations/${integration.id}`, { channels, keywords }) 호출
   function handleSave() {
     onClose();
   }

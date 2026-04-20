@@ -49,9 +49,9 @@ export function PendingIssuesTab() {
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2">
               <Badge variant="outline" className={PRIORITY_STYLES[issue.parsedPriority ?? "LOW"]}>
-                {issue.parsedPriority}
+                {issue.parsedPriority ?? "N/A"}
               </Badge>
-              <span className="text-sm font-semibold">{issue.parsedTitle}</span>
+              <span className="text-sm font-semibold">{issue.parsedTitle ?? "제목 없음"}</span>
             </div>
             <p className="text-xs text-muted-foreground">
               {issue.sourceChannel} · {formatTimeAgo(issue.createdAt)} · 신뢰도 {Math.round((issue.confidence ?? 0) * 100)}%
@@ -66,11 +66,12 @@ export function PendingIssuesTab() {
             >
               확인
             </Button>
+            {/* TODO: [BE 연동] 수정 클릭 → 대기 이슈 편집 모달 또는 상세 페이지 연결 */}
             <Button
               size="sm"
               variant="outline"
               className="text-xs text-primary"
-              onClick={() => {}}
+              disabled
             >
               수정
             </Button>

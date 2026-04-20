@@ -111,7 +111,7 @@ export function ConnectorCard({
       )}
 
       <div className="flex gap-2">
-        {integration && isConnected ? (
+        {integration && (isConnected || integration.status === "ERROR") ? (
           <>
             <Button variant="outline" size="sm" className="text-xs" onClick={() => onConfigure(integration)}>
               설정

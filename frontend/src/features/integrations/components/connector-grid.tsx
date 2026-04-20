@@ -9,6 +9,7 @@ import { JiraConfigModal } from "./jira-config-modal";
 import type { Integration } from "../types/integration";
 import type { PlatformInfo } from "../utils/connector-registry";
 
+// TODO: [BE 연동] 코드 엔진 전용 타입으로 분리 — 현재 PlatformInfo 재사용 (GITHUB/GITLAB type 임시 사용)
 const CODE_ENGINES: PlatformInfo[] = [
   {
     type: "GITHUB" as const,

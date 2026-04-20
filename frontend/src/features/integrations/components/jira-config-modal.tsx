@@ -37,6 +37,7 @@ export function JiraConfigModal({ integration, open, onClose }: JiraConfigModalP
     setProjectKeys(projectKeys.filter((k) => k !== key));
   }
 
+  // TODO: [BE 연동] apiClient.put(`/integrations/${integration.id}`, { projectKeys }) 호출
   function handleSave() {
     onClose();
   }
