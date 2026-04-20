@@ -16,9 +16,9 @@ interface ConnectorCardProps {
 
 function StatusBadge({ status }: { status: Integration["status"] }) {
   const styles = {
-    CONNECTED: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
+    CONNECTED: "bg-primary text-primary-foreground border-transparent",
     DISCONNECTED: "bg-muted text-muted-foreground border-border",
-    ERROR: "bg-red-500/20 text-red-400 border-red-500/40",
+    ERROR: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-700",
   };
 
   const labels = {
@@ -58,8 +58,8 @@ export function ConnectorCard({
 
   if (isPhase2) {
     return (
-      <div className="relative rounded-xl border border-dashed border-border/50 bg-card p-5 opacity-50">
-        <Badge variant="outline" className="absolute -top-2 right-3 bg-yellow-500/10 text-yellow-500 border-yellow-500/30 text-[10px]">
+      <div className="relative rounded-xl border border-dashed border-border/50 bg-muted/20 p-5 cursor-not-allowed opacity-60">
+        <Badge variant="outline" className="absolute -top-2 right-3 bg-muted text-muted-foreground border-border text-[10px] font-medium">
           Phase 2
         </Badge>
         <div className="flex items-center gap-3 mb-3">
@@ -77,7 +77,7 @@ export function ConnectorCard({
   }
 
   return (
-    <div className={`relative rounded-xl border bg-card p-5 ${isConnected ? "border-emerald-500/30" : "border-border"}`}>
+    <div className={`relative rounded-xl border p-5 transition-colors ${isConnected ? "border-primary/40 bg-card" : "bg-card border-border"}`}>
       {integration && <StatusBadge status={integration.status} />}
 
       <div className="flex items-center gap-3 mb-3">
@@ -116,10 +116,10 @@ export function ConnectorCard({
             <Button variant="outline" size="sm" className="text-xs" onClick={() => onConfigure(integration)}>
               설정
             </Button>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => onTest(integration)}>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => onTest(integration)}>
               연결 테스트
             </Button>
-            <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => onDisconnect(integration)}>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => onDisconnect(integration)}>
               해제
             </Button>
           </>

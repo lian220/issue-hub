@@ -59,7 +59,7 @@ export function ConnectorGrid() {
   return (
     <div className="space-y-8">
       <section>
-        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-primary">
+        <h3 className="mb-4 border-l-4 border-primary pl-3 text-sm font-semibold text-foreground">
           이슈 소스
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -78,7 +78,7 @@ export function ConnectorGrid() {
       </section>
 
       <section>
-        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-tertiary">
+        <h3 className="mb-4 border-l-4 border-primary pl-3 text-sm font-semibold text-foreground">
           알림 채널
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -97,7 +97,7 @@ export function ConnectorGrid() {
       </section>
 
       <section>
-        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-emerald-500">
+        <h3 className="mb-4 border-l-4 border-primary pl-3 text-sm font-semibold text-foreground">
           코드 생성 엔진
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
