@@ -5,6 +5,7 @@ import { SummaryCards } from "@/features/dashboard/components/summary-cards";
 import { RecentIssues } from "@/features/dashboard/components/recent-issues";
 import { PolicyAccuracy } from "@/features/dashboard/components/policy-accuracy";
 import { ArchitecturalInsight } from "@/features/dashboard/components/architectural-insight";
+import { PendingIssuesWidget } from "@/features/dashboard/components/pending-issues-widget";
 
 export default function DashboardPage() {
   return (
@@ -41,8 +42,9 @@ export default function DashboardPage() {
         {/* Left: Recent High-Priority Issues */}
         <RecentIssues />
 
-        {/* Right: Policy Accuracy + Architectural Insight */}
+        {/* Right: Pending Issues + Policy Accuracy + Architectural Insight */}
         <div className="space-y-6">
+          <PendingIssuesWidget />
           <PolicyAccuracy />
           <ArchitecturalInsight />
         </div>
