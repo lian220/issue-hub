@@ -3,12 +3,15 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Filter } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { createIssueColumns } from "./issue-tables/columns";
 import { useIssueList } from "../hooks/use-issues";
+import { PendingIssuesTab } from "./pending-issues-tab";
+import { MOCK_PENDING_ISSUES } from "@/constants/mock-integrations";
 import type { Issue } from "@/types/issue";
 
 const PAGE_SIZE = 10;
@@ -42,6 +45,10 @@ export function IssueListing() {
     priority: null as string | null,
     source: null as string | null,
   });
+
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get("tab") ?? "all");
+  const pendingCount = MOCK_PENDING_ISSUES.filter((i) => i.status === "PENDING").length;
 
   const { data: allIssues, lookups } = useIssueList(filters);
   const columns = useMemo(() => createIssueColumns(lookups), [lookups]);
@@ -80,81 +87,108 @@ export function IssueListing() {
         </Button>
       </div>
 
-      {/* Search + Filter */}
-      <div className="space-y-3">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="이슈 검색..."
-            value={filters.search}
-            onChange={(e) => {
-              setPage(1);
-              setFilters((prev) => ({
-                ...prev,
-                search: (e.target as HTMLInputElement).value,
-              }));
-            }}
-            className="pl-9"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <FilterGroup
-            label="상태"
-            options={STATUS_OPTIONS}
-            selected={filters.status}
-            onSelect={(v) => toggleFilter("status", v)}
-          />
-          <FilterGroup
-            label="우선순위"
-            options={PRIORITY_OPTIONS}
-            selected={filters.priority}
-            onSelect={(v) => toggleFilter("priority", v)}
-          />
-          <FilterGroup
-            label="소스"
-            options={SOURCE_OPTIONS}
-            selected={filters.source}
-            onSelect={(v) => toggleFilter("source", v)}
-          />
-        </div>
+      {/* Tabs */}
+      <div className="mb-4 flex gap-0 border-b border-border">
+        <button
+          className={`px-4 py-2 text-sm ${tab === "all" ? "text-foreground border-b-2 border-primary font-medium" : "text-muted-foreground"}`}
+          onClick={() => setTab("all")}
+        >
+          전체 이슈
+        </button>
+        <button
+          className={`px-4 py-2 text-sm ${tab === "pending" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground"}`}
+          onClick={() => setTab("pending")}
+        >
+          대기 중
+          {pendingCount > 0 && (
+            <span className="ml-1 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] text-destructive-foreground">
+              {pendingCount}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Table */}
-      <DataTable
-        columns={columns}
-        data={paginatedIssues}
-        onRowClick={(issue: Issue) => router.push(`/issues/${issue.id}`)}
-      />
+      {tab === "pending" ? (
+        <PendingIssuesTab />
+      ) : (
+        <>
+          {/* Search + Filter */}
+          <div className="space-y-3">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="이슈 검색..."
+                value={filters.search}
+                onChange={(e) => {
+                  setPage(1);
+                  setFilters((prev) => ({
+                    ...prev,
+                    search: (e.target as HTMLInputElement).value,
+                  }));
+                }}
+                className="pl-9"
+              />
+            </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          {(page - 1) * PAGE_SIZE + 1}
-          {" - "}
-          {Math.min(page * PAGE_SIZE, allIssues.length)} / 총{" "}
-          {allIssues.length}건
-        </span>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            이전
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            다음
-          </Button>
-        </div>
-      </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <FilterGroup
+                label="상태"
+                options={STATUS_OPTIONS}
+                selected={filters.status}
+                onSelect={(v) => toggleFilter("status", v)}
+              />
+              <FilterGroup
+                label="우선순위"
+                options={PRIORITY_OPTIONS}
+                selected={filters.priority}
+                onSelect={(v) => toggleFilter("priority", v)}
+              />
+              <FilterGroup
+                label="소스"
+                options={SOURCE_OPTIONS}
+                selected={filters.source}
+                onSelect={(v) => toggleFilter("source", v)}
+              />
+            </div>
+          </div>
+
+          {/* Table */}
+          <DataTable
+            columns={columns}
+            data={paginatedIssues}
+            onRowClick={(issue: Issue) => router.push(`/issues/${issue.id}`)}
+          />
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>
+              {(page - 1) * PAGE_SIZE + 1}
+              {" - "}
+              {Math.min(page * PAGE_SIZE, allIssues.length)} / 총{" "}
+              {allIssues.length}건
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                이전
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                다음
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
