@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Filter } from "lucide-react";
-import { useQueryState } from "nuqs";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +46,8 @@ export function IssueListing() {
     source: null as string | null,
   });
 
-  const [tab, setTab] = useQueryState("tab", { defaultValue: "all" });
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get("tab") ?? "all");
   const pendingCount = MOCK_PENDING_ISSUES.filter((i) => i.status === "PENDING").length;
 
   const { data: allIssues, lookups } = useIssueList(filters);
