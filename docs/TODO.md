@@ -1,6 +1,6 @@
 # IssueHub MVP TODO
 
-> 최종 수정일: 2026-04-05
+> 최종 수정일: 2026-04-20
 > Jira: https://liandy220-developer.atlassian.net/jira/software/projects/LIH
 > 구조: 에픽 = Phase, 스토리 = 사용자 스토리, 라벨 = 도메인
 > 참조: Expert Panel 결과 (2026-03-25, 2026-04-01), FRONTEND-SPEC.md, BACKEND-SPEC.md
@@ -15,6 +15,12 @@
 - [x] ~~이슈 상세 + AI 분석 목업 (AiAnalysisPanel, AutoDevSection)~~
 - [x] ~~이슈 목록 목업 (DataTable, 칩 필터, 검색)~~
 - [x] ~~P0-1. 스켈레톤 코드 정리~~
+- [x] ~~EP-MVP-1 레이아웃 + 공통 컴포넌트 (Forge Logic 디자인 시스템)~~
+- [x] ~~EP-MVP-2 이슈 화면 (대시보드 + 이슈 목록 + 이슈 상세)~~
+- [x] ~~LIH-107 정책 관리 화면~~
+- [x] ~~LIH-108 승인 워크플로우 화면~~
+- [x] ~~LIH-109 연동 설정 화면 (카드 그리드 + Jira/Slack 모달 + 대기 이슈 큐)~~
+- [x] ~~연동 시스템 설계 문서 + 구현 플랜 작성~~
 
 ---
 
@@ -202,6 +208,57 @@
 
 ### Phase 3 검증
 > ✅ "AI 분석이 실제로 이슈 해결에 도움이 되는가? 사용자가 계속 쓰겠다고 하는가?"
+
+---
+
+---
+
+## [MVP 연동] 다음 작업 (우선순위순)
+
+> 설계 문서: docs/superpowers/specs/2026-04-15-integration-system-design.md
+> 구현 플랜: docs/superpowers/plans/2026-04-20-plan1-integration-infra.md
+
+### 1. 인프라 셋업 (선행 필수)
+
+- [ ] **Docker Compose에 n8n + Keycloak 추가** — LIH-97, LIH-99
+  - n8n (이벤트 게이트웨이), Keycloak (OIDC + RBAC)
+  - 플랜: `docs/superpowers/plans/2026-04-20-plan1-integration-infra.md` Task 1
+
+- [ ] **DB 스키마 마이그레이션** — LIH-100
+  - integrations 테이블 + pending_issues 테이블
+  - 플랜: Task 2
+
+### 2. BE 연동 API (Plan 3 — 작성 필요)
+
+- [ ] **core-connector 모듈 구현** — LIH-128
+  - ConfigureConnectorUseCase, TestConnectionUseCase 구현체
+  - ManageWorkflowPort (→ n8n API)
+
+- [ ] **infra-n8n 모듈 신규 생성**
+  - n8n REST API Adapter (워크플로우 CRUD, credential 관리)
+  - 워크플로우 JSON 템플릿 5개 (slack-error-monitor, jira-issue-receiver 등)
+
+- [ ] **Webhook API + 대기 이슈 API** — LIH-113
+  - POST /webhooks/issues, /webhooks/slack-events, /webhooks/slack-interactive
+  - GET/POST /pending-issues (확인/무시)
+
+- [ ] **Keycloak Spring Security 연동**
+  - spring-boot-starter-oauth2-resource-server
+  - JWT 검증 + RBAC (@PreAuthorize)
+
+- [ ] **OAuth 콜백 API**
+  - GET /oauth/callback/jira, /oauth/callback/slack
+
+### 3. FE Mock → 실 API 연동
+
+- [ ] **useConnectors → SWR + apiClient 교체** — LIH-131
+- [ ] **설정 모달 저장 로직 연결**
+- [ ] **OAuth 팝업 실제 플로우 구현**
+
+### 4. 나머지 FE 페이지
+
+- [ ] **모니터링 화면** — LIH-110
+- [ ] **온보딩 위자드** — LIH-111
 
 ---
 
