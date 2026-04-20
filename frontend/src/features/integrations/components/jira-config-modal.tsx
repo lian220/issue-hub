@@ -43,7 +43,7 @@ export function JiraConfigModal({ integration, open, onClose }: JiraConfigModalP
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+      <SheetContent className="w-[90vw] sm:w-[540px] sm:max-w-[540px] overflow-y-auto p-6">
         <SheetHeader>
           <SheetTitle>Jira 설정</SheetTitle>
           <SheetDescription>연동할 Jira 프로젝트를 설정합니다</SheetDescription>

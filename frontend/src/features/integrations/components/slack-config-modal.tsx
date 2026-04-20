@@ -63,7 +63,7 @@ export function SlackConfigModal({ integration, open, onClose }: SlackConfigModa
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+      <SheetContent className="w-[90vw] sm:w-[540px] sm:max-w-[540px] overflow-y-auto p-6">
         <SheetHeader>
           <SheetTitle>Slack 설정</SheetTitle>
           <SheetDescription>에러 감시 채널과 키워드를 설정합니다</SheetDescription>
