@@ -40,6 +40,7 @@ Desktop.ini
 postgres_data/
 redis_data/
 kafka_data/
+n8n_data/
 
 # Compiled output
 *.class
