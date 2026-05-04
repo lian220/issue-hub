@@ -1,6 +1,7 @@
-# Integration Infrastructure Plan (Plan 1/3)
+# Integration Infrastructure Plan (Plan 1/3) — ✅ 완료 (2026-05-04)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> ~~**For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.~~
+> **PR**: https://github.com/lian220/issue-hub/pull/7 (merged)
 
 **Goal:** Docker Compose에 n8n + Keycloak 추가, DB 스키마(integrations, pending_issues) 마이그레이션
 

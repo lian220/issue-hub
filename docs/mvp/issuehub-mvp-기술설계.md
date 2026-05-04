@@ -337,19 +337,43 @@ CREATE TABLE users (
 );
 ```
 
-#### integrations (연동 설정)
+#### integrations (연동 설정) — 구현 완료 (V3 마이그레이션)
 
 ```sql
 CREATE TABLE integrations (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type            VARCHAR(20) NOT NULL,                    -- JIRA, NOTION, GITHUB, GITLAB, SLACK, TEAMS, EMAIL
-    role            VARCHAR(20) NOT NULL,                    -- ISSUE_SOURCE, NOTIFICATION
+    role            VARCHAR(20) NOT NULL,                    -- ISSUE_SOURCE, NOTIFICATION, CODE_ENGINE
     status          VARCHAR(20) NOT NULL DEFAULT 'DISCONNECTED', -- CONNECTED, DISCONNECTED, ERROR
     config          JSONB NOT NULL DEFAULT '{}',             -- API Key, webhook URL, OAuth 토큰 등 (암호화)
     n8n_workflow_id VARCHAR(100),                             -- n8n 워크플로우 ID
+    n8n_credential_id VARCHAR(100),                           -- n8n credential ID
     last_sync_at    TIMESTAMPTZ,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()       -- 트리거로 자동 갱신
+);
+```
+
+#### pending_issues (대기 이슈) — 구현 완료 (V4 마이그레이션)
+
+```sql
+CREATE TABLE pending_issues (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_type         VARCHAR(20) NOT NULL,                -- SLACK, GRAFANA 등
+    source_channel      VARCHAR(100),
+    source_message_id   VARCHAR(200) UNIQUE,                 -- 멱등성 보장
+    raw_message         TEXT NOT NULL,
+    parsed_title        VARCHAR(500),
+    parsed_description  TEXT,
+    parsed_priority     VARCHAR(20),
+    parsed_component    VARCHAR(100),
+    confidence          DECIMAL(3,2) CHECK (confidence IS NULL OR (confidence >= 0 AND confidence <= 1)),
+    status              VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, CONFIRMED, DISMISSED
+    confirmed_by        UUID,
+    external_issue_id   VARCHAR(200),
+    external_issue_url  VARCHAR(500),
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    confirmed_at        TIMESTAMPTZ
 );
 ```
 
@@ -580,9 +604,16 @@ services:
     mem_limit: 512m
 
   n8n:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:1.70.3
     mem_limit: 512m
     ports: ["5678:5678"]
+    # PostgreSQL 백엔드, healthcheck 포함 (구현 완료)
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    mem_limit: 512m
+    ports: ["8180:8080"]
+    # OIDC + RBAC (ADMIN/MEMBER), Realm 자동 임포트 (구현 완료)
 
   ollama:
     image: ollama/ollama:latest

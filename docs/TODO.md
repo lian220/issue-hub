@@ -1,6 +1,6 @@
 # IssueHub MVP TODO
 
-> 최종 수정일: 2026-04-20
+> 최종 수정일: 2026-05-04
 > Jira: https://liandy220-developer.atlassian.net/jira/software/projects/LIH
 > 구조: 에픽 = Phase, 스토리 = 사용자 스토리, 라벨 = 도메인
 > 참조: Expert Panel 결과 (2026-03-25, 2026-04-01), FRONTEND-SPEC.md, BACKEND-SPEC.md
@@ -21,6 +21,11 @@
 - [x] ~~LIH-108 승인 워크플로우 화면~~
 - [x] ~~LIH-109 연동 설정 화면 (카드 그리드 + Jira/Slack 모달 + 대기 이슈 큐)~~
 - [x] ~~연동 시스템 설계 문서 + 구현 플랜 작성~~
+- [x] ~~LIH-97 Docker Compose 기본 스택 (PostgreSQL + pgvector + Redis) — 이미 존재~~
+- [x] ~~LIH-99 Docker Compose에 n8n + Keycloak 추가~~
+- [x] ~~LIH-100 DB 스키마 마이그레이션 (integrations + pending_issues)~~
+- [x] ~~Upstash Redis 재생성 (GCP asia-northeast1)~~
+- [x] ~~Aiven PostgreSQL 재기동~~
 
 ---
 
@@ -218,15 +223,13 @@
 > 설계 문서: docs/superpowers/specs/2026-04-15-integration-system-design.md
 > 구현 플랜: docs/superpowers/plans/2026-04-20-plan1-integration-infra.md
 
-### 1. 인프라 셋업 (선행 필수)
+### ~~1. 인프라 셋업~~ ✅ 완료 (2026-05-04)
 
-- [ ] **Docker Compose에 n8n + Keycloak 추가** — LIH-97, LIH-99
-  - n8n (이벤트 게이트웨이), Keycloak (OIDC + RBAC)
-  - 플랜: `docs/superpowers/plans/2026-04-20-plan1-integration-infra.md` Task 1
-
-- [ ] **DB 스키마 마이그레이션** — LIH-100
-  - integrations 테이블 + pending_issues 테이블
-  - 플랜: Task 2
+- [x] ~~Docker Compose에 n8n + Keycloak 추가 — LIH-97, LIH-99~~
+- [x] ~~DB 스키마 마이그레이션 (integrations + pending_issues) — LIH-100~~
+- [x] ~~n8n 이미지 고정 (1.70.3), healthcheck 추가~~
+- [x] ~~Keycloak Realm 자동 임포트 (ADMIN/MEMBER 역할, 테스트 유저)~~
+- [x] ~~.env.example 생성~~
 
 ### 2. BE 연동 API (Plan 3 — 작성 필요)
 

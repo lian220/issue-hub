@@ -2,7 +2,7 @@
 
 > **프로젝트**: IssueHub — AI 기반 이슈 자동화 플랫폼
 > **작성일**: 2026-04-15
-> **상태**: Draft
+> **상태**: In Progress (Plan 1 인프라 완료, Plan 2 FE 완료, Plan 3 BE 미착수)
 > **관련 기획서**: docs/mvp/issuehub-mvp-기획서.md, docs/mvp/issuehub-mvp-기술설계.md
 
 ---

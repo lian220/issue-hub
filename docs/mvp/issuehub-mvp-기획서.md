@@ -55,8 +55,10 @@
   - *사용자 스토리*: 운영자가 전체 파이프라인 상태를 실시간으로 파악하고 장애에 즉시 대응한다
 - [ ] **외부 연동 허브 (n8n)** — 이슈 소스 + 알림 채널 통합 관리
   - *이슈 소스*: Jira, Notion, GitHub Issues, GitLab Issues (webhook 수신)
-  - *알림 채널*: Slack, Microsoft Teams, Email (결과 발송)
+  - *알림 채널 (양방향)*: Slack (에러 감지 인바운드 + 알림/확인 아웃바운드), Microsoft Teams, Email
   - *사용자 스토리*: 관리자가 연동할 도구를 선택하면, n8n이 자동으로 webhook을 설정하고 양방향 동기화한다
+  - *변경 (2026-04-15)*: Slack 양방향 연동 추가, AI 파싱 + 관리자 확인 단계, MVP 1단계 Jira+Slack만, Keycloak RBAC 도입
+  - *상세 설계*: `docs/superpowers/specs/2026-04-15-integration-system-design.md`
 - [ ] **정책 역등록 피드백 루프** — 관리자 수동 처리 케이스를 정책으로 자동 등록 제안
   - *사용자 스토리*: 정책 미매칭으로 수동 처리한 건을 AI가 정책화 제안하여 학습이 누적된다
 

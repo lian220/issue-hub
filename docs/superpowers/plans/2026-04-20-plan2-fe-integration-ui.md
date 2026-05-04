@@ -1,6 +1,7 @@
-# Frontend Integration UI Plan (Plan 2/3)
+# Frontend Integration UI Plan (Plan 2/3) — ✅ 완료 (2026-04-20)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> ~~**For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.~~
+> **PR**: https://github.com/lian220/issue-hub/pull/6 (merged)
 
 **Goal:** 연동 설정 페이지(카드 그리드 + OAuth 팝업 + 설정 모달) + 대기 이슈 큐(대시보드 위젯 + 이슈 탭) 구현
 
